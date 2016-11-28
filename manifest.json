@@ -1,0 +1,17 @@
+{
+	"conf" : {
+		"title" : "Working title: Blocks",
+		"desc" : "Game desc...",
+		"embeded" : true,
+		"enable_p5" : true
+	},
+	"scripts" : [
+		"./game.js",
+		"./windows.js",
+		"./camera.js",
+		"./terrain.js",
+		"./npc.js",
+		"./player.js",
+		"./sketch.js"
+	]
+}
