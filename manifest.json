@@ -6,6 +6,8 @@
 		"enable_p5" : true
 	},
 	"scripts" : [
+		"https://raw.githubusercontent.com/bmoren/p5.collide2D/master/p5.collide2d.js",
+		"./p5.collide2d.js",
 		"./game.js",
 		"./windows.js",
 		"./camera.js",

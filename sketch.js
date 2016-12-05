@@ -4,18 +4,22 @@ var windows;
 var camera;
 var npcs = [];
 var draw_q = [];
+var base_url = base_url || '.';
 
 function setup () {
-	// body...
+	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
 	myCanvas.parent('game_container');
-
+	// Init //
 	game = new Game();
 	windows = new Windows();
 	player = new Player();
 	terrain = new Terrain();
 	terrain.loadmap(base_url+'/maps/test.json');
 	camera = new Camera();
+	// Test //
+
+	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'boy'}));
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'female'}));
@@ -165,7 +169,10 @@ function keyPressed() {
 }
 
 function mousePressed() {
-	player.x = mouseX;
-	player.y = mouseY;
+	// player.x = mouseX;
+	// player.y = mouseY;
+	// console.log(mouseX, mouseY);
+	// console.log(player.x, player.y);
+	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 new p5();
