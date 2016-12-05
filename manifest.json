@@ -8,10 +8,10 @@
 	"scripts" : [
 		"./p5.collide2d.js",
 		"./game.js",
+		"./terrain.js",
 		"./windows.js",
 		"./camera.js",
-		"./terrain.js",
-		"./npc.js",
+		"./entities.js",
 		"./player.js",
 		"./sketch.js"
 	]

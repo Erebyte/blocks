@@ -6,6 +6,8 @@ var npcs = [];
 var draw_q = [];
 var base_url = base_url || '.';
 
+var tree;
+
 function setup () {
 	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
@@ -19,6 +21,8 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
+	tree = new Tree(createVector(43,-89));
+
 	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'boy'}));
@@ -29,6 +33,10 @@ function setup () {
 function draw () {
 	// body...
 	if (game.gamestate == "logo") {
+		background(30);
+
+		game._logos.update();
+		game._logos.draw();
 
 	}else if (game.gamestate == "startmenu") {
 		background(50);
@@ -90,6 +98,8 @@ function draw () {
 		}
 		blit(player,player.y);
 
+		blit(tree, tree.y);
+
 		// draw
 		terrain.draw(camera.x, camera.y);
 		push();
@@ -121,7 +131,7 @@ function keyPressed() {
 	if (game.gamestate == "startmenu") {
 		if (key == ' ') {
 			game.setGamestate("pregame");
-			var strs = ["W+S to swap genders\nA+D to change color","Make You...", "Space to continue."];
+			var strs = ["W+S to swap genders\nA+D to change color\nT to talk","Make You..."];
 			var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
 			var kp_id = windows.kp.length;
 			windows.kp.push(function (key) {
@@ -139,7 +149,7 @@ function keyPressed() {
 		}
 	}else if (game.gamestate == 'pregame') {
 		if (!windows.open_window) {
-			if (key == ' ') {
+			if (key == 'T') {
 				game.setGamestate("game");
 			}else if (key == 'W' || key == 'S') {
 				if (player.gender == 'male') {
