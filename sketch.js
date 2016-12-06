@@ -4,18 +4,30 @@ var windows;
 var camera;
 var npcs = [];
 var draw_q = [];
+var entities = [];
+var base_url = base_url || '.';
+
 
 function setup () {
-	// body...
+	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
 	myCanvas.parent('game_container');
-
+	// Init //
 	game = new Game();
 	windows = new Windows();
 	player = new Player();
 	terrain = new Terrain();
 	terrain.loadmap(base_url+'/maps/test.json');
 	camera = new Camera();
+	// Test //
+
+	entities.push(new Tree(createVector(43,-89)));
+	entities.push(new Tree(createVector(-239,-204)));
+	entities.push(new Tree(createVector(277,-203)));
+	entities.push(new Tree(createVector(284,233)));
+	entities.push(new Tree(createVector(-220,223)));
+
+	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'boy'}));
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'female'}));
@@ -25,6 +37,10 @@ function setup () {
 function draw () {
 	// body...
 	if (game.gamestate == "logo") {
+		background(30);
+
+		game._logos.update();
+		game._logos.draw();
 
 	}else if (game.gamestate == "startmenu") {
 		background(50);
@@ -84,6 +100,11 @@ function draw () {
 			var npc = npcs[i];
 			blit(npc,npc.y);
 		}
+		// blit all entities
+		for (var i = entities.length - 1; i >= 0; i--) {
+			var e = entities[i];
+			blit(e,e.y);
+		}
 		blit(player,player.y);
 
 		// draw
@@ -117,7 +138,7 @@ function keyPressed() {
 	if (game.gamestate == "startmenu") {
 		if (key == ' ') {
 			game.setGamestate("pregame");
-			var strs = ["W+S to swap genders\nA+D to change color","Make You...", "Space to continue."];
+			var strs = ["W+S to swap genders\nA+D to change color\nT to talk","Make You..."];
 			var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
 			var kp_id = windows.kp.length;
 			windows.kp.push(function (key) {
@@ -135,7 +156,7 @@ function keyPressed() {
 		}
 	}else if (game.gamestate == 'pregame') {
 		if (!windows.open_window) {
-			if (key == ' ') {
+			if (key == 'T') {
 				game.setGamestate("game");
 			}else if (key == 'W' || key == 'S') {
 				if (player.gender == 'male') {
@@ -165,7 +186,10 @@ function keyPressed() {
 }
 
 function mousePressed() {
-	player.x = mouseX;
-	player.y = mouseY;
+	// player.x = mouseX;
+	// player.y = mouseY;
+	// console.log(mouseX, mouseY);
+	// console.log(player.x, player.y);
+	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 new p5();
