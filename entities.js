@@ -129,31 +129,83 @@ NPC.prototype.get_text = function () {
 };
 
 
-var Tree = function (pos) {
+var Tree = function (pos, w, size) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
+	size = size || 1;
+	this.w = w || 40;
+	this.w = this.w*size;
+	this.h = 60*size;
+	this.sway = (Math.random()*2-1)*15;
+	this.vertices = [];
+	this.points = [];
 	this.anm = function () {
 		console.log("anm Tree");
 	};
+	this.generate();
 };
 Tree.prototype.draw = function () {
 	// console.log('tree',this.x,this.y);
-	var p1x = this.x - 20;
-	var p1y = this.y;
-	var p2x = this.x;
-	var p2y = this.y - 70;
-	var p3x = this.x + 20;
-	var p3y = this.y;
 	push();
-	// noStroke();
-	stroke(255);
+	// stroke(255);
+	noStroke();
+	// fill(204,153,0);
+	colorMode(HSB, 360, 100, 100);
+	for (var i = this.points.length - 1; i >= 0; i--) {
+		var p = this.points[i];
+		var s = p[2];
+		fill(p[3],p[4],p[5]);
+		ellipse(p[0],p[1],s,s);
+	}
+	colorMode(RGB, 255);
+
+	stroke(10);
 	fill(10);
-	triangle(p1x,p1y,p2x,p2y,p3x,p3y);
-	triangle(p1x,p1y,p2x,this.y+10,p3x,p3y);
+	for (var i = this.vertices.length - 1;i >= 0; i--) {
+		var p = this.vertices[i];
+		triangle(p[0],p[1],p[2],p[3],p[4],p[5]);
+	}
 	pop();
 };
+Tree.prototype._gen_branch = function (tri, angle, size) {
+	size = size*0.7 || 20;
+	var theta = angle * (Math.PI/180);
+	var p1x = -1 * size * Math.sin(theta);
+	var p1y = size * Math.cos(theta);
+	var n = Math.random()/4 + 0.25;
+	var p2x,p2y;
+	if (theta*(180/Math.PI)<0) {
+		p2x = tri[2] + (tri[4]-tri[2])*n;
+		p2y = tri[3] + (tri[5]-tri[3])*n;
+	}else {
+		p2x = tri[2] + (tri[0]-tri[2])*n;
+		p2y = tri[3] + (tri[1]-tri[3])*n;
+	}
+	var new_tri = [tri[2],tri[3],tri[2]+p1x,tri[3]-p1y,p2x,p2y];
+	this.vertices.push(new_tri);
+	if (size > 5) {
+		this._gen_branch(new_tri, angle+Math.random()*40+20, size);
+		this._gen_branch(new_tri, angle+-1*(Math.random()*40+20), size);
+	}
+	if (size < 15) {
+		this.points.push([tri[2]+p1x,tri[3]-p1y,Math.random()*10+5,45,Math.random()*40+60,Math.random()*40+30]);
+	}
+};
 Tree.prototype.generate = function () {
+	var p1x = this.x - this.w/2;
+	var p1y = this.y;
+	var p2x = this.x + this.sway;
+	var p2y = this.y - this.h;
+	var p3x = this.x + this.w/2;
+	var p3y = this.y;
+	// triangle(p1x,p1y,p2x,p2y,p3x,p3y);
+	// triangle(p1x,p1y,p2x,this.y+10,p3x,p3y);
+	this.vertices.push([p1x,p1y,p2x,p2y,p3x,p3y]);
+	this.vertices.push([p1x,p1y,this.x,this.y+10,p3x,p3y]);
 
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20);
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20));
+	// console.log(this.vertices);
 };

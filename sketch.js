@@ -4,9 +4,9 @@ var windows;
 var camera;
 var npcs = [];
 var draw_q = [];
+var entities = [];
 var base_url = base_url || '.';
 
-var tree;
 
 function setup () {
 	// Create Canvas //
@@ -21,7 +21,11 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	tree = new Tree(createVector(43,-89));
+	entities.push(new Tree(createVector(43,-89)));
+	entities.push(new Tree(createVector(-239,-204)));
+	entities.push(new Tree(createVector(277,-203)));
+	entities.push(new Tree(createVector(284,233)));
+	entities.push(new Tree(createVector(-220,223)));
 
 	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
@@ -96,9 +100,12 @@ function draw () {
 			var npc = npcs[i];
 			blit(npc,npc.y);
 		}
+		// blit all entities
+		for (var i = entities.length - 1; i >= 0; i--) {
+			var e = entities[i];
+			blit(e,e.y);
+		}
 		blit(player,player.y);
-
-		blit(tree, tree.y);
 
 		// draw
 		terrain.draw(camera.x, camera.y);
