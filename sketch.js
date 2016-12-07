@@ -114,6 +114,7 @@ function draw () {
 		draw_blitz();
 		// camera.draw();
 		pop();
+		terrain.fog.draw(player, camera);
 		windows.draw();
 		
 	}
@@ -188,8 +189,8 @@ function keyPressed() {
 function mousePressed() {
 	// player.x = mouseX;
 	// player.y = mouseY;
-	// console.log(mouseX, mouseY);
+	console.log(mouseX, mouseY);
 	// console.log(player.x, player.y);
-	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	// console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 new p5();
