@@ -1,6 +1,7 @@
 var TerrainEntity = function (entity_data) {
 	GameEntity.call(this, entity_data);
 };
+TerrainEntity.prototype = Object.create(GameEntity.prototype);
 
 var Fog = function () {
 	this.depth = 10;
@@ -96,15 +97,29 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	translate(width/2, height/2);
 
 	fill(30);
-	beginShape();
-	for(i=0; i < this.poly.length; i++){
-		vertex(this.poly[i].x,this.poly[i].y);
+	for (pi=0;pi<this.poly.length;pi++){
+		var poly = this.poly[pi];
+		beginShape();
+		for(i=0; i < poly.length; i++){
+			vertex(poly[i].x,poly[i].y);
+		}
+		endShape(CLOSE);
 	}
-	endShape(CLOSE);
 	pop();
 };
 Terrain.prototype.colide = function (px, py, pr) {
-	return collideCirclePoly(px,py,pr*2,this.poly);
+	for (var i = this.poly.length - 1; i >= 0; i--) {
+		var poly = this.poly[i];
+		if (collideCirclePoly(px,py,pr*2,poly) === true) {
+			return true;
+		}
+	}
+	for (var i = entities.length - 1; i >= 0; i--) {
+		if (entities[i].collide(px,py,pr*2)) {
+			return true;
+		}
+	}
+	return false;
 };
 Terrain.prototype.loadmap = function (url) {
 	var self = this;
@@ -113,11 +128,24 @@ Terrain.prototype.loadmap = function (url) {
 		self.map_data = json.map_data;
 		self.poly = [];
 		for (var i = 0;i<json.map_data.vertex.length;i++) {
-			var p = json.map_data.vertex[i];
-			self.poly[i] = createVector(p[0],p[1]);
+			var poly = json.map_data.vertex[i];
+			var new_poly = [];
+			for(var j = 0;j<poly.length;j++){
+				var p = poly[j];
+				new_poly.push(createVector(p[0],p[1]));
+			}
+			self.poly.push(new_poly);
 		}
 		for (var i = json.npcs.length - 1; i >= 0; i--) {
 			pushNPC(new NPC(json.npcs[i]));
+		}
+		for (var i = json.entities.length -1;i>=0;i--) {
+			var ent = json.entities[i];
+			if (ent.type == 'Tree') {
+				entities.push(new Tree(createVector(ent.pos[0],ent.pos[1])));
+			}else if (ent.type == 'Grass') {
+				entities.push(new Grass(createVector(ent.pos[0],ent.pos[1]),ent.size));
+			}
 		}
 	});
 };

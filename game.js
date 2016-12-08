@@ -99,6 +99,7 @@ GameEntity.prototype.animate = function () {
 		this.anm();
 	}
 };
+GameEntity.prototype.collide = function () {return false;};
 
 /* // -=-=- Main Game Object -=-=- // */
 var Game = function () {

@@ -7,6 +7,7 @@ var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
 
+var house;
 
 function setup () {
 	// Create Canvas //
@@ -21,11 +22,8 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Tree(createVector(43,-89)));
-	entities.push(new Tree(createVector(-239,-204)));
-	entities.push(new Tree(createVector(277,-203)));
-	entities.push(new Tree(createVector(284,233)));
-	entities.push(new Tree(createVector(-220,223)));
+	house = new House(createVector(636,171));
+	entities.push(house);
 
 	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
@@ -189,8 +187,8 @@ function keyPressed() {
 function mousePressed() {
 	// player.x = mouseX;
 	// player.y = mouseY;
-	console.log(mouseX, mouseY);
+	// console.log(mouseX, mouseY);
 	// console.log(player.x, player.y);
-	// console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 new p5();

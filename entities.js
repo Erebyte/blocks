@@ -52,6 +52,7 @@ var NPC = function (data) {
 	// ];
 	// this.npc_name = names[round(random(names.length-1))];
 };
+NPC.prototype = Object.create(GameEntity.prototype);
 NPC.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
@@ -135,7 +136,7 @@ var Tree = function (pos, w, size) {
 		y:pos.y
 	});
 	size = size || 1;
-	this.w = w || 40;
+	this.w = w || map(Math.random(),0,1,30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
 	this.sway = (Math.random()*2-1)*15;
@@ -146,6 +147,7 @@ var Tree = function (pos, w, size) {
 	};
 	this.generate();
 };
+Tree.prototype = Object.create(TerrainEntity.prototype);
 Tree.prototype.draw = function () {
 	// console.log('tree',this.x,this.y);
 	push();
@@ -208,4 +210,74 @@ Tree.prototype.generate = function () {
 	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20);
 	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20));
 	// console.log(this.vertices);
+};
+
+
+var Grass = function (pos, size) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.w = map(Math.random(),0,1,5,15);
+	this.sway = map(Math.random(),0,1,-this.w/4,this.w/4);
+	this.bush_size = size;
+	this.points = [];
+	this.leaves = [];
+
+	var gen_point = function(angle, l) {
+		// var t = angle * (PI/180);
+		// return createVector(l*Math.sin(t),l*Math.cos(t));
+		var p  = p5.Vector.fromAngle(radians(angle+90));
+		p.mult(l);
+		return p;
+	};
+	var gen_leaf = function(point, angle) {
+		var size = Math.floor(map(Math.random(),0,1,10,20));
+		var v = p5.Vector.fromAngle(radians(angle+90));
+		v.mult(size);
+		var p;
+		if (Math.random()>0.5) {
+			p = p5.Vector.fromAngle(radians(angle+90+30));
+		}else {
+			p = p5.Vector.fromAngle(radians(angle+90-30));
+		}
+		p.mult(size/2);
+		v.add(point.x,point.y);
+		p.add(point.x,point.y);
+		return [point.x,point.y,v.x,v.y,p.x,p.y];
+	};
+	for (var i=0;i<=this.bush_size;i++) {
+		var a = map(Math.random(),0,1,-15,15);
+		var l = map(Math.random(),0,1,15,40);
+		var p = gen_point(a,l);
+		this.points.push(p);
+		if(Math.random()<0.5 && l > 30) {
+			this.leaves.push(gen_leaf(p, a));
+		}
+	}
+	if (Math.random()<0.75) {
+		var p = createVector(this.sway,10);
+		var a = map(Math.random(),0,1,-50,50);
+		this.leaves.push(gen_leaf(p, a));
+	}
+};
+Grass.prototype = Object.create(TerrainEntity.prototype);
+Grass.prototype.draw = function () {
+	push();
+	// draw lines
+	for (var i = this.points.length - 1; i >= 0; i--) {
+		var p = this.points[i];
+		line(this.x, this.y, p.x+this.x, this.y-p.y);
+	}
+	// draw leaves
+	fill(143, 143, 86);
+	for (var i = this.leaves.length - 1; i >= 0; i--) {
+		var l = this.leaves[i];
+		triangle(this.x+l[0],this.y-l[1],this.x+l[2],this.y-l[3],this.x+l[4],this.y-l[5]);
+	}
+	// draw base
+	stroke(32, 32, 19);
+	fill(32, 32, 19);
+	quad(this.x-this.w/2,this.y,this.x+this.sway,this.y-10,this.x+this.w/2,this.y,this.x,this.y+3);
+	pop();
 };
