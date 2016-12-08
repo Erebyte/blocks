@@ -107,18 +107,42 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	}
 	pop();
 };
-Terrain.prototype.colide = function (px, py, pr) {
+Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 	for (var i = this.poly.length - 1; i >= 0; i--) {
 		var poly = this.poly[i];
-		if (collideCirclePoly(px,py,pr*2,poly) === true) {
+		if (collideCirclePoly(px,py,pr,poly) === true) {
+			var next = 0;
+			// for (var cur = 0; cur<poly.length;cur++) {
+				// next = cur+1;
+				// if (next == poly.length) next = 0;
+				// var vc = poly[cur];    // c for "current"
+				// var vn = poly[next];       // n for "next"
+				// var col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px,py,pr);
+				// if (col) {
+				// 	var vr = vc.copy();
+				// 	vr.sub(vn);
+				// 	vr.rotate(radians(-90));
+				// 	vr.normalize();
+				// 	vr.mult(pr);
+				// 	var vc2 = vc.copy();
+				// 	vc2.sub(vr);
+				// 	var vn2 = vn.copy();
+				// 	vn2.sub(vr);
+				// 	var k = ((vn2.y-vc2.y)*(px+vx-vc2.x)-(vn2.x-vc2.x)*(py+vy-vc2.y))/(Math.pow(vn2.y-vc2.y,2)+Math.pow(vn2.x-vc2.x,2));
+				// 	var x = px-k*(vn2.y-vc2.y);
+				// 	var y = py-k*(vn2.x-vc2.x);
+				// 	return createVector(x,y);
+				// 	// console.log(vc,vc2);
+				// }
+			// }
 			return true;
 		}
 	}
-	for (var i = entities.length - 1; i >= 0; i--) {
-		if (entities[i].collide(px,py,pr*2)) {
-			return true;
-		}
-	}
+	// for (var i = entities.length - 1; i >= 0; i--) {
+	// 	if (entities[i].collide(px,py,pr*2)) {
+	// 		return true;
+	// 	}
+	// }
 	return false;
 };
 Terrain.prototype.loadmap = function (url) {

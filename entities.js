@@ -171,6 +171,15 @@ Tree.prototype.draw = function () {
 	}
 	pop();
 };
+Tree.prototype.collide = function (px,py,pr) {
+	var poly = [
+		createVector(this.x - this.w/2, this.y),
+		createVector(this.x, this.y+10),
+		createVector(this.x + this.w/2, this.y),
+		createVector(this.x, this.y-10)
+	];
+	return collideCirclePoly(px,py,pr,poly);
+};
 Tree.prototype._gen_branch = function (tri, angle, size) {
 	size = size*0.7 || 20;
 	var theta = angle * (Math.PI/180);

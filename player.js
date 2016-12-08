@@ -34,7 +34,7 @@ Player.prototype.keyPressed = function (key) {
 		this.flags['talk_to_npc'].talk_to();
 	}
 };
-Player.prototype.update = function (npcs) {
+Player.prototype.update = function () {
 	var mx = 0;
 	var my = 0;
 	if (keyIsDown(87)) {//w
@@ -50,41 +50,58 @@ Player.prototype.update = function (npcs) {
 		mx += 1;
 	}
 	this.move(mx, my);
+	if (this.collide(mx,my)) {
+		this.unmove();
+		// this.move(mx,my);
+	}
 	
-	this.flags['talk_to'] = false;
-	this.flags['talk_to_npc'] = null;
-	var unmoved = false;
-	for (var i = npcs.length - 1; i >= 0; i--) {
-		var x = npcs[i].x;
-		var y = npcs[i].y;
-		if (this.colide_circle(x, y, npcs[i].w/2)) { // move to begining 
-			this.unmove();
-			unmoved = true;
+	// this.flags['talk_to'] = false;
+	// this.flags['talk_to_npc'] = null;
+	// var unmoved = false;
+	// for (var i = npcs.length - 1; i >= 0; i--) {
+	// 	var x = npcs[i].x;
+	// 	var y = npcs[i].y;
+	// 	if (this.colide_circle(x, y, npcs[i].w/2)) { // move to begining 
+	// 		this.unmove();
+	// 		unmoved = true;
+	// 	}
+	// 	if (this.colide_circle(x, y, npcs[i].w/2+20)) {
+	// 		if (this.flags['talk_to'] && (this.flags['talk_to_npc'] != npcs[i])) {
+	// 			var old = this.flags['talk_to_npc'];
+	// 			var cur = npcs[i];
+	// 			var old_dist = dist(this.x, this.y, old.x, old.y);
+	// 			var cur_dist = dist(this.x, this.y, cur.x, cur.y);
+	// 			if (cur_dist < old_dist) {
+	// 				this.flags['talk_to_npc'] = cur;
+	// 			}
+	// 		}else {
+	// 			this.flags['talk_to'] = true;
+	// 			this.flags['talk_to_npc'] = npcs[i];
+	// 		}
+	// 	}
+	// }
+	// if (unmoved === false && terrain.colide(this.x, this.y, this.w/2) && !this.flags['noclip']) {
+	// 	console.log('collllllllide');
+	// 	this.unmove();
+	// 	unmoved = true;
+	// }
+	// if (unmoved === false && windows.open_window) {
+	// 	this.unmove();
+	// 	unmoved = true;
+	// }
+};
+Player.prototype.collide = function (vx,vy) {
+	var res;
+	res = terrain.collide(this.x,this.y,this.w,vx,vy);
+	if(res)return true;
+
+	for (var i = entities.length - 1; i >= 0; i--) {
+		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
+			res = entities[i].collide(this.x,this.y,this.w);
+			if(res)return true;
 		}
-		if (this.colide_circle(x, y, npcs[i].w/2+20)) {
-			if (this.flags['talk_to'] && (this.flags['talk_to_npc'] != npcs[i])) {
-				var old = this.flags['talk_to_npc'];
-				var cur = npcs[i];
-				var old_dist = dist(this.x, this.y, old.x, old.y);
-				var cur_dist = dist(this.x, this.y, cur.x, cur.y);
-				if (cur_dist < old_dist) {
-					this.flags['talk_to_npc'] = cur;
-				}
-			}else {
-				this.flags['talk_to'] = true;
-				this.flags['talk_to_npc'] = npcs[i];
-			}
-		}
 	}
-	if (unmoved === false && terrain.colide(this.x, this.y, this.w/2) && !this.flags['noclip']) {
-		console.log('collllllllide');
-		this.unmove();
-		unmoved = true;
-	}
-	if (unmoved === false && windows.open_window) {
-		this.unmove();
-		unmoved = true;
-	}
+	return false;
 };
 Player.prototype.move = function (x, y, spd) {
 	spd = spd || this.attribs['speed'] + (this.flags['spd_buf'] || 0);

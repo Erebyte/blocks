@@ -2,7 +2,6 @@ var game;
 var player;
 var windows;
 var camera;
-var npcs = [];
 var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
@@ -89,18 +88,19 @@ function draw () {
 		draw_q = [];
 
 		// update
-		player.update(npcs);
+		player.update();
 		windows.update();
 		camera.update(player);
 
 		// blit all sprites
-		for (var i = npcs.length - 1; i >= 0; i--) {
-			var npc = npcs[i];
-			blit(npc,npc.y);
-		}
+		// for (var i = npcs.length - 1; i >= 0; i--) {
+		// 	var npc = npcs[i];
+		// 	blit(npc,npc.y);
+		// }
 		// blit all entities
 		for (var i = entities.length - 1; i >= 0; i--) {
 			var e = entities[i];
+			// if(collidePointPoint(player.x,player.y,e.x,e.y,200))blit(e,e.y);
 			blit(e,e.y);
 		}
 		blit(player,player.y);
@@ -130,7 +130,7 @@ function draw_blitz () {
 }
 
 function pushNPC (npc) {
-	npcs.push(npc);
+	entities.push(npc);
 }
 
 function keyPressed() {
