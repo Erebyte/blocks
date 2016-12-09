@@ -78,12 +78,11 @@ NPC.prototype.move = function (x, y) {
 	this.x += x*spd;
 	this.y += y*spd;
 };
-NPC.prototype.talk_to = function () {
+NPC.prototype.check = function () {
 	if (this.flags['talking'] !== true) {
 		var strs = this.get_text();
 		var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
-		var kp_id = windows.kp.length;
-		windows.kp.push(function (key) {
+		var kp_id = windows.newKeyPress(function (key) {
 			if (key == 'T') {
 				windows.windows[win].next();
 			}
@@ -94,6 +93,21 @@ NPC.prototype.talk_to = function () {
 			windows.kp[kp_id] = null;
 		};
 		this.flags['talking'] = true;
+	}
+};
+NPC.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,this.w/2+40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
 	}
 };
 NPC.prototype.get_text = function () {
@@ -170,6 +184,38 @@ Tree.prototype.draw = function () {
 		triangle(p[0],p[1],p[2],p[3],p[4],p[5]);
 	}
 	pop();
+};
+Tree.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = ['This is a tree...'];
+		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
+		var kp_id = windows.newKeyPress(function (key) {
+			if (key == 'T') {
+				windows.windows[win].next();
+			}
+		});
+		var self = this;
+		windows.windows[win].unload = function () {
+			self.flags['talking'] = false;
+			windows.kp[kp_id] = null;
+		};
+		this.flags['talking'] = true;
+	}
+};
+Tree.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,this.w/2+40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
 };
 Tree.prototype.collide = function (px,py,pr) {
 	var poly = [

@@ -34,3 +34,35 @@ House.prototype.draw = function () {
 	quad(this.x+this.door_offset-10,this.y,this.x-this.sway/4+this.door_offset-15,this.y-40,this.x-this.sway/4+this.door_offset+15,this.y-40,this.x+this.door_offset+10,this.y);
 	pop();
 };
+House.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = ['This is a house...'];
+		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
+		var kp_id = windows.newKeyPress(function (key) {
+			if (key == 'T') {
+				windows.windows[win].next();
+			}
+		});
+		var self = this;
+		windows.windows[win].unload = function () {
+			self.flags['talking'] = false;
+			windows.kp[kp_id] = null;
+		};
+		this.flags['talking'] = true;
+	}
+};
+House.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
+};
