@@ -117,9 +117,8 @@ function draw () {
 		terrain.fog.draw(player, camera);
 		windows.draw();
 		
-		if(game.debug_mode){
-			game.draw_debug();
-		}
+		if(terrain._debug)terrain.draw_debug();
+		if(game.debug_mode)game.draw_debug();
 	}
 }
 
@@ -185,9 +184,8 @@ function keyPressed() {
 		}else {
 			windows.keyPressed(key);
 		}
-		if(key == '1') {
-			game.toggleDebug();
-		}
+		if(key == '1') game.toggleDebug();
+		if(key == '2') terrain.toggleDebug();
 	}
 	console.log(keyCode + " : " + key);
 }

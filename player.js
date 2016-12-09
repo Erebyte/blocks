@@ -50,10 +50,12 @@ Player.prototype.update = function () {
 		if (keyIsDown(68)){//d
 			mx += 1;
 		}
-		this.move(mx, my);
-		if (this.collide(mx,my)) {
-			this.unmove();
-			// this.move(mx,my);
+		// this.move(mx, my);
+		if (mx!==0 || my!==0){
+			if (!this.collide(this.get_move(mx,my))) {
+				// this.unmove();
+				this.move(mx,my);
+			}
 		}
 
 		this.flags['check'] = false;
@@ -66,10 +68,15 @@ Player.prototype.update = function () {
 		}
 	}
 };
-Player.prototype.collide = function (vx,vy) {
+Player.prototype.collide = function (vec) {
 	var res;
-	res = terrain.collide(this.x,this.y,this.w,vx,vy);
-	if(res)return true;
+	res = terrain.collide(this.x,this.y,this.w,vec.x,vec.y);
+	if(res){
+		if(res !== true) {
+			this.move(res.x,res.y,1);
+		}
+		return true;
+	}
 
 	for (var i = entities.length - 1; i >= 0; i--) {
 		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
@@ -79,10 +86,14 @@ Player.prototype.collide = function (vx,vy) {
 	}
 	return false;
 };
-Player.prototype.move = function (x, y, spd) {
+Player.prototype.get_move = function (x, y, spd) {
 	spd = spd || this.attribs['speed'] + (this.flags['spd_buf'] || 0);
-	this.x += x*spd;
-	this.y += y*spd;
+	return createVector(x*spd, y*spd);
+};
+Player.prototype.move = function (x, y, spd) {
+	var vec = this.get_move(x,y,spd);
+	this.x += vec.x;
+	this.y += vec.y;
 	var maxPath = 10;
 	for (var i = 1; i < maxPath; i++) {
 		this.path[i-1] = this.path[i];

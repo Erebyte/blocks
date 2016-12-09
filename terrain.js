@@ -87,9 +87,14 @@ Fog.prototype.update = function () {
 	}
 };
 
+
+
 var Terrain = function () {
+	this._debug = false;
+	this._debug_dat = [];
 	this.map_data = [];
 	this.fog = new Fog();
+
 };
 Terrain.prototype.draw = function (xoff, yoff) {
 	push();
@@ -107,23 +112,74 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	}
 	pop();
 };
+Terrain.prototype.toggleDebug = function () {
+	this._debug = !this._debug;
+};
+Terrain.prototype.draw_debug = function () {
+	push();
+	translate(width/2-camera.x, height/2-camera.y);
+	noFill();
+	stroke(0,255,0);
+	ellipse(player.x,player.y,1,1);
+	ellipse(player.x,player.y,player.w,player.w);
+	for (var i = this._debug_dat.length - 1; i >= 0; i--) {
+		var ln = this._debug_dat[i];
+		stroke(ln[2].x,ln[2].y,ln[2].z);
+		line(ln[0].x,ln[0].y,ln[1].x,ln[1].y);
+	}
+	pop();
+};
 Terrain.prototype.collide = function (px, py, pr, vx, vy) {
+	// var pos = createVector(px,py);
+	// var vec = createVector(vx,vy);
+	// vec.mult(10);
+	// vec.add(pos);
+	//[createVector(px,py),vec,createVector(0,0,255)]
+	if(this._debug)this._debug_dat = [];
 	for (var i = this.poly.length - 1; i >= 0; i--) {
 		var poly = this.poly[i];
-		if (collideCirclePoly(px,py,pr,poly) === true) {
+		if (collideCirclePoly(px+vx,py+vy,pr,poly) === true) {
 			var next = 0;
-			// for (var cur = 0; cur<poly.length;cur++) {
-				// next = cur+1;
-				// if (next == poly.length) next = 0;
-				// var vc = poly[cur];    // c for "current"
-				// var vn = poly[next];       // n for "next"
-				// var col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px,py,pr);
-				// if (col) {
-				// 	var vr = vc.copy();
-				// 	vr.sub(vn);
-				// 	vr.rotate(radians(-90));
-				// 	vr.normalize();
-				// 	vr.mult(pr);
+			for (var cur = 0; cur<poly.length;cur++) {
+				next = cur+1;
+				if (next == poly.length) next = 0;
+				var vc = poly[cur];    // c for "current"
+				var vn = poly[next];       // n for "next"
+				var col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px+vx,py+vy,pr);
+				if (col) {
+					// calculations
+					var vr = vc.copy();
+					vr.sub(vn);
+					vr.rotate(radians(-90));
+					vr.normalize();
+					vr.mult(pr/2);
+					var l1 = p5.Vector.add(vc,vr);
+					var l2 = p5.Vector.add(vn,vr);
+					var p2 = collideLineLine(px,py,px+vx,py+vy,l1.x,l1.y,l2.x,l2.y,true);
+					
+					var vd2;
+					var vl;
+					// end case
+					if(p2.x){
+						vl = p5.Vector.sub(l2,p2);
+						vl.normalize();
+						vd2 = createVector(p2.x-px, p2.y-py)
+					}else{
+						vl = p5.Vector.sub(l2,createVector(px,py));
+						vl.normalize();
+						vd2 = createVector();
+					}
+					var vd = createVector(vx-vd2.x, vy-vd2.y);
+					var vd3 = p5.Vector.mult(vl, p5.Vector.dot(vd,vl));
+					// debug
+					if(this._debug) {
+						this._debug_dat.push([p5.Vector.add(vd3,createVector(px,py)),l2,createVector(0,255,0)]);
+						this._debug_dat.push([l1,l2,createVector(0,0,255)]);
+						this._debug_dat.push([vc,vn,createVector(255,0,0)]);
+					}
+					return p5.Vector.add(vd2,vd3);
+				}
+			}
 				// 	var vc2 = vc.copy();
 				// 	vc2.sub(vr);
 				// 	var vn2 = vn.copy();
