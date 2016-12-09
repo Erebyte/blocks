@@ -12,6 +12,7 @@
 		"./windows.js",
 		"./camera.js",
 		"./entities.js",
+		"./buildings.js",
 		"./player.js",
 		"./sketch.js"
 	]

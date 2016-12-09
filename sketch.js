@@ -2,11 +2,11 @@ var game;
 var player;
 var windows;
 var camera;
-var npcs = [];
 var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
 
+var house;
 
 function setup () {
 	// Create Canvas //
@@ -21,11 +21,8 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Tree(createVector(43,-89)));
-	entities.push(new Tree(createVector(-239,-204)));
-	entities.push(new Tree(createVector(277,-203)));
-	entities.push(new Tree(createVector(284,233)));
-	entities.push(new Tree(createVector(-220,223)));
+	house = new House(createVector(636,171));
+	entities.push(house);
 
 	// extra //
 	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
@@ -91,19 +88,22 @@ function draw () {
 		draw_q = [];
 
 		// update
-		player.update(npcs);
+		game.update();
+		player.update();
 		windows.update();
 		camera.update(player);
 
 		// blit all sprites
-		for (var i = npcs.length - 1; i >= 0; i--) {
-			var npc = npcs[i];
-			blit(npc,npc.y);
-		}
+		// for (var i = npcs.length - 1; i >= 0; i--) {
+		// 	var npc = npcs[i];
+		// 	blit(npc,npc.y);
+		// }
 		// blit all entities
 		for (var i = entities.length - 1; i >= 0; i--) {
 			var e = entities[i];
-			blit(e,e.y);
+			if(collideRectCircle(camera.x-width/2,camera.y-height/2,width,height,e.x,e.y,300))blit(e,e.y);
+			// if(collidePointPoint(player.x,player.y,e.x,e.y,200))blit(e,e.y);
+			// blit(e,e.y);
 		}
 		blit(player,player.y);
 
@@ -114,8 +114,12 @@ function draw () {
 		draw_blitz();
 		// camera.draw();
 		pop();
+		terrain.fog.draw(player, camera);
 		windows.draw();
 		
+		if(game.debug_mode){
+			game.draw_debug();
+		}
 	}
 }
 
@@ -131,7 +135,7 @@ function draw_blitz () {
 }
 
 function pushNPC (npc) {
-	npcs.push(npc);
+	entities.push(npc);
 }
 
 function keyPressed() {
@@ -180,6 +184,9 @@ function keyPressed() {
 			player.keyPressed(key);
 		}else {
 			windows.keyPressed(key);
+		}
+		if(key == '1') {
+			game.toggleDebug();
 		}
 	}
 	console.log(keyCode + " : " + key);

@@ -52,6 +52,7 @@ var NPC = function (data) {
 	// ];
 	// this.npc_name = names[round(random(names.length-1))];
 };
+NPC.prototype = Object.create(GameEntity.prototype);
 NPC.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
@@ -77,12 +78,11 @@ NPC.prototype.move = function (x, y) {
 	this.x += x*spd;
 	this.y += y*spd;
 };
-NPC.prototype.talk_to = function () {
+NPC.prototype.check = function () {
 	if (this.flags['talking'] !== true) {
 		var strs = this.get_text();
 		var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
-		var kp_id = windows.kp.length;
-		windows.kp.push(function (key) {
+		var kp_id = windows.newKeyPress(function (key) {
 			if (key == 'T') {
 				windows.windows[win].next();
 			}
@@ -93,6 +93,21 @@ NPC.prototype.talk_to = function () {
 			windows.kp[kp_id] = null;
 		};
 		this.flags['talking'] = true;
+	}
+};
+NPC.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,this.w/2+40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
 	}
 };
 NPC.prototype.get_text = function () {
@@ -135,7 +150,7 @@ var Tree = function (pos, w, size) {
 		y:pos.y
 	});
 	size = size || 1;
-	this.w = w || 40;
+	this.w = w || map(Math.random(),0,1,30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
 	this.sway = (Math.random()*2-1)*15;
@@ -146,6 +161,7 @@ var Tree = function (pos, w, size) {
 	};
 	this.generate();
 };
+Tree.prototype = Object.create(TerrainEntity.prototype);
 Tree.prototype.draw = function () {
 	// console.log('tree',this.x,this.y);
 	push();
@@ -168,6 +184,47 @@ Tree.prototype.draw = function () {
 		triangle(p[0],p[1],p[2],p[3],p[4],p[5]);
 	}
 	pop();
+};
+Tree.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = ['This is a tree...'];
+		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
+		var kp_id = windows.newKeyPress(function (key) {
+			if (key == 'T') {
+				windows.windows[win].next();
+			}
+		});
+		var self = this;
+		windows.windows[win].unload = function () {
+			self.flags['talking'] = false;
+			windows.kp[kp_id] = null;
+		};
+		this.flags['talking'] = true;
+	}
+};
+Tree.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,this.w/2+40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
+};
+Tree.prototype.collide = function (px,py,pr) {
+	var poly = [
+		createVector(this.x - this.w/2, this.y),
+		createVector(this.x, this.y+10),
+		createVector(this.x + this.w/2, this.y),
+		createVector(this.x, this.y-10)
+	];
+	return collideCirclePoly(px,py,pr,poly);
 };
 Tree.prototype._gen_branch = function (tri, angle, size) {
 	size = size*0.7 || 20;
@@ -208,4 +265,74 @@ Tree.prototype.generate = function () {
 	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20);
 	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20));
 	// console.log(this.vertices);
+};
+
+
+var Grass = function (pos, size) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.w = map(Math.random(),0,1,5,15);
+	this.sway = map(Math.random(),0,1,-this.w/4,this.w/4);
+	this.bush_size = size;
+	this.points = [];
+	this.leaves = [];
+
+	var gen_point = function(angle, l) {
+		// var t = angle * (PI/180);
+		// return createVector(l*Math.sin(t),l*Math.cos(t));
+		var p  = p5.Vector.fromAngle(radians(angle+90));
+		p.mult(l);
+		return p;
+	};
+	var gen_leaf = function(point, angle) {
+		var size = Math.floor(map(Math.random(),0,1,10,20));
+		var v = p5.Vector.fromAngle(radians(angle+90));
+		v.mult(size);
+		var p;
+		if (Math.random()>0.5) {
+			p = p5.Vector.fromAngle(radians(angle+90+30));
+		}else {
+			p = p5.Vector.fromAngle(radians(angle+90-30));
+		}
+		p.mult(size/2);
+		v.add(point.x,point.y);
+		p.add(point.x,point.y);
+		return [point.x,point.y,v.x,v.y,p.x,p.y];
+	};
+	for (var i=0;i<=this.bush_size;i++) {
+		var a = map(Math.random(),0,1,-15,15);
+		var l = map(Math.random(),0,1,15,40);
+		var p = gen_point(a,l);
+		this.points.push(p);
+		if(Math.random()<0.5 && l > 30) {
+			this.leaves.push(gen_leaf(p, a));
+		}
+	}
+	if (Math.random()<0.75) {
+		var p = createVector(this.sway,10);
+		var a = map(Math.random(),0,1,-50,50);
+		this.leaves.push(gen_leaf(p, a));
+	}
+};
+Grass.prototype = Object.create(TerrainEntity.prototype);
+Grass.prototype.draw = function () {
+	push();
+	// draw lines
+	for (var i = this.points.length - 1; i >= 0; i--) {
+		var p = this.points[i];
+		line(this.x, this.y, p.x+this.x, this.y-p.y);
+	}
+	// draw leaves
+	fill(143, 143, 86);
+	for (var i = this.leaves.length - 1; i >= 0; i--) {
+		var l = this.leaves[i];
+		triangle(this.x+l[0],this.y-l[1],this.x+l[2],this.y-l[3],this.x+l[4],this.y-l[5]);
+	}
+	// draw base
+	stroke(32, 32, 19);
+	fill(32, 32, 19);
+	quad(this.x-this.w/2,this.y,this.x+this.sway,this.y-10,this.x+this.w/2,this.y,this.x,this.y+3);
+	pop();
 };
