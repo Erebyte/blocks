@@ -140,6 +140,13 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 	// vec.mult(10);
 	// vec.add(pos);
 	//[createVector(px,py),vec,createVector(0,0,255)]
+	var get_radius_vector = function (c,n,r) {
+		var v = p5.Vector.sub(c,n);
+		v.rotate(radians(-90));
+		v.normalize();
+		v.mult(r);
+		return v;
+	};
 	if(this._debug)this._debug_dat = [];
 	for (var i = this.poly.length - 1; i >= 0; i--) {
 		var poly = this.poly[i];
@@ -154,31 +161,39 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 				var col;
 				col = collidePointCircle(vc.x,vc.y,px+vx,py+vy,pr);
 				if (col) {
+					var prev = cur-1;
+					if(cur===0)prev=poly.length-1;
+					var vp = poly[prev];
+					var nrv = get_radius_vector(vc,vn,pr/2);
+					var prv = get_radius_vector(vp,vc,pr/2);
 					// FIX:
 					var p1 = createVector(px,py);
 					var pd = p5.Vector.add(p1,createVector(vx,vy));
 					var vp2 = p5.Vector.sub(pd,vc);
 					vp2.normalize();
-					vp2.mult(pr);
+					vp2.mult(pr/2);
 					var p2 = p5.Vector.add(vp2,vc);
 					if(this._debug){
-						vc.z = pr;
-						this._debug_dat.push([vc,createVector(0,0,255)]);
-						this._debug_dat.push([vc,p2,createVector(0,255,0)]);
-						console.log('corner');
+						var v = vc.copy();
+						v.z = pr;
+						this._debug_dat.push([v,createVector(0,0,255)]);
+						this._debug_dat.push([v,p2,createVector(0,255,0)]);
+						this._debug_dat.push([v,p5.Vector.add(v,nrv),createVector(255,0,0)]);
+						this._debug_dat.push([v,p5.Vector.add(v,prv),createVector(255,0,0)]);
+						// console.log('corner');
+						// console.log(nrv.heading(),prv.heading());
+						// console.log(p5.Vector.sub(p2,p1).heading());
 					}
-					return true;
-					// return p5.Vector.sub(p2,p1);
+					// end case
+					// console.log(prv.heading(),vp2.heading(),nrv.heading());
+					if(prv.heading()>=vp2.heading()&&vp2.heading()>=nrv.heading())
+						return p5.Vector.sub(p2,p1);
 				}
 				col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px+vx,py+vy,pr);
 				if (col) {
 					// calculations
 					var d = last_mv || createVector(vx,vy);
-					var vr = vc.copy();
-					vr.sub(vn);
-					vr.rotate(radians(-90));
-					vr.normalize();
-					vr.mult(pr/2);
+					var vr = get_radius_vector(vc,vn,pr/2);
 					var l1 = p5.Vector.add(vc,vr);
 					var l2 = p5.Vector.add(vn,vr);
 					// l2.add(p5.Vector.sub(l2,l1));
@@ -200,11 +215,13 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 						this._debug_dat.push([vc,vn,createVector(255,0,0)]);
 					}
 					// end case
+					// console.log(s, last_mv);
 					if (s===0)return true;
 					if (last_mv)last_mv = p5.Vector.sub(createVector(px,py),p2);
 					if (!last_mv)last_mv = p5.Vector.add(vd2,vd3);
 				}
 			}
+			console.log(last_mv);
 			return last_mv || true;
 				// 	var vc2 = vc.copy();
 				// 	vc2.sub(vr);
