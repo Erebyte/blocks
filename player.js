@@ -80,7 +80,7 @@ Player.prototype.collide = function (vec) {
 
 	for (var i = entities.length - 1; i >= 0; i--) {
 		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
-			res = entities[i].collide(this.x,this.y,this.w);
+			res = entities[i].collide(this.x+vec.x,this.y+vec.y,this.w);
 			if(res)return true;
 		}
 	}
