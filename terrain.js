@@ -135,11 +135,6 @@ Terrain.prototype.draw_debug = function () {
 	pop();
 };
 Terrain.prototype.collide = function (px, py, pr, vx, vy) {
-	// var pos = createVector(px,py);
-	// var vec = createVector(vx,vy);
-	// vec.mult(10);
-	// vec.add(pos);
-	//[createVector(px,py),vec,createVector(0,0,255)]
 	var get_radius_vector = function (c,n,r) {
 		var v = p5.Vector.sub(c,n);
 		v.rotate(radians(-90));
@@ -149,18 +144,20 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 	};
 	if(this._debug)this._debug_dat = [];
 	for (var i = this.poly.length - 1; i >= 0; i--) {
+		// for each poly
 		var poly = this.poly[i];
 		if (collideCirclePoly(px+vx,py+vy,pr,poly) === true) {
-			var next = 0;
 			var last_mv;
+			var next = 0;
 			for (var cur = 0; cur<poly.length;cur++) {
+				// for each line
 				next = cur+1;
 				if (next == poly.length) next = 0;
 				var vc = poly[cur];    // c for "current"
 				var vn = poly[next];       // n for "next"
 				var col;
 				col = collidePointCircle(vc.x,vc.y,px+vx,py+vy,pr);
-				if (col) {
+				if (col) { // if collide corner
 					var prev = cur-1;
 					if(cur===0)prev=poly.length-1;
 					var vp = poly[prev];
@@ -180,17 +177,23 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 						this._debug_dat.push([v,p2,createVector(0,255,0)]);
 						this._debug_dat.push([v,p5.Vector.add(v,nrv),createVector(255,0,0)]);
 						this._debug_dat.push([v,p5.Vector.add(v,prv),createVector(255,0,0)]);
-						// console.log('corner');
-						// console.log(nrv.heading(),prv.heading());
-						// console.log(p5.Vector.sub(p2,p1).heading());
 					}
 					// end case
-					// console.log(prv.heading(),vp2.heading(),nrv.heading());
-					if(prv.heading()>=vp2.heading()&&vp2.heading()>=nrv.heading())
-						return p5.Vector.sub(p2,p1);
+					var an = degrees(nrv.heading()+2*PI);
+					var ap = degrees(prv.heading()+2*PI);
+					var ad = degrees(vp2.heading()+2*PI);
+					if(an<350)an+=360;
+					if(ap<350)ap+=360;
+					if(ad<350)ad+=360;
+					if(this._debug) {
+						console.log(an,ap,ad);
+						if(ap>=ad&&ad>=an)console.log('hit');
+					}
+					if(ap>=ad&&ad>=an)last_mv=p5.Vector.sub(p2,p1);
+					if(ap>=ad&&ad>=an)return p5.Vector.sub(p2,p1);
 				}
 				col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px+vx,py+vy,pr);
-				if (col) {
+				if (col) { // if collide line
 					// calculations
 					var d = last_mv || createVector(vx,vy);
 					var vr = get_radius_vector(vc,vn,pr/2);
@@ -215,33 +218,21 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 						this._debug_dat.push([vc,vn,createVector(255,0,0)]);
 					}
 					// end case
-					// console.log(s, last_mv);
-					if (s===0)return true;
-					if (last_mv)last_mv = p5.Vector.sub(createVector(px,py),p2);
-					if (!last_mv)last_mv = p5.Vector.add(vd2,vd3);
+					var np = p5.Vector.add(createVector(px,py),p5.Vector.add(vd2,vd3));
+					if(collidePointLine(np.x,np.y,l1.x,l1.y,l2.x,l2.y)) {
+						if (last_mv)last_mv = p5.Vector.sub(createVector(px,py),p2);
+						if (!last_mv)last_mv = p5.Vector.add(vd2,vd3);
+					}
+					// console.log('last move_'+cur, last_mv);
+					// console.log(np,p2,vd2,vd3);
+					// console.log(p5.Vector.add(vd2,vd3));
+					// console.log(collidePointLine(np.x,np.y,l1.x,l1.y,l2.x,l2.y));
 				}
 			}
-			console.log(last_mv);
+			if(this._debug)console.log('last move', last_mv);
 			return last_mv || true;
-				// 	var vc2 = vc.copy();
-				// 	vc2.sub(vr);
-				// 	var vn2 = vn.copy();
-				// 	vn2.sub(vr);
-				// 	var k = ((vn2.y-vc2.y)*(px+vx-vc2.x)-(vn2.x-vc2.x)*(py+vy-vc2.y))/(Math.pow(vn2.y-vc2.y,2)+Math.pow(vn2.x-vc2.x,2));
-				// 	var x = px-k*(vn2.y-vc2.y);
-				// 	var y = py-k*(vn2.x-vc2.x);
-				// 	return createVector(x,y);
-				// 	// console.log(vc,vc2);
-				// }
-			// }
-			// return true;
 		}
 	}
-	// for (var i = entities.length - 1; i >= 0; i--) {
-	// 	if (entities[i].collide(px,py,pr*2)) {
-	// 		return true;
-	// 	}
-	// }
 	return false;
 };
 Terrain.prototype.loadmap = function (url) {

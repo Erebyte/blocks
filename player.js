@@ -69,22 +69,23 @@ Player.prototype.update = function () {
 	}
 };
 Player.prototype.collide = function (vec) {
+	var ret = false;
 	var res;
 	res = terrain.collide(this.x,this.y,this.w,vec.x,vec.y);
 	if(res){
 		if(res !== true) {
 			this.move(res.x,res.y,1);
 		}
-		return true;
+		ret = true;
 	}
 
 	for (var i = entities.length - 1; i >= 0; i--) {
 		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
 			res = entities[i].collide(this.x+vec.x,this.y+vec.y,this.w);
-			if(res)return true;
+			if(res)ret = true;
 		}
 	}
-	return false;
+	return ret;
 };
 Player.prototype.get_move = function (x, y, spd) {
 	spd = spd || this.attribs['speed'] + (this.flags['spd_buf'] || 0);
@@ -95,10 +96,10 @@ Player.prototype.move = function (x, y, spd) {
 	this.x += vec.x;
 	this.y += vec.y;
 	var maxPath = 10;
-	for (var i = 1; i < maxPath; i++) {
-		this.path[i-1] = this.path[i];
-	}
 	this.path.push([x, y, spd]);
+	if (this.path.length>maxPath) {
+		this.path = this.path.slice(1);
+	}
 };
 Player.prototype.unmove = function () {
 	var path = this.path[this.path.length-1];
