@@ -70,21 +70,27 @@ Player.prototype.update = function () {
 };
 Player.prototype.collide = function (vec) {
 	var ret = false;
-	var res;
-	res = terrain.collide(this.x,this.y,this.w,vec.x,vec.y);
-	if(res){
-		if(res !== true) {
-			this.move(res.x,res.y,1);
+	var mv;
+	var result;
+	result = terrain.collide(this.x,this.y,this.w,vec.x,vec.y);
+	if(result){
+		if(result !== true) {
+			vec = result;
+			mv = true;
 		}
 		ret = true;
 	}
 
 	for (var i = entities.length - 1; i >= 0; i--) {
 		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
-			res = entities[i].collide(this.x+vec.x,this.y+vec.y,this.w);
-			if(res)ret = true;
+			result = entities[i].collide(this.x+vec.x,this.y+vec.y,this.w);
+			if(result){
+				ret = true;
+				mv = false;
+			}
 		}
 	}
+	if(mv)this.move(vec.x,vec.y,1);
 	return ret;
 };
 Player.prototype.get_move = function (x, y, spd) {

@@ -3,6 +3,7 @@ var TerrainEntity = function (entity_data) {
 };
 TerrainEntity.prototype = Object.create(GameEntity.prototype);
 
+
 var Fog = function () {
 	this.depth = 10;
 	this.tri = [
@@ -135,7 +136,9 @@ Terrain.prototype.draw_debug = function () {
 	pop();
 };
 Terrain.prototype.collide = function (px, py, pr, vx, vy) {
+	// BUG: hug accute convex corner (zig zag)
 	var get_radius_vector = function (c,n,r) {
+		// return normal vector to line at length r
 		var v = p5.Vector.sub(c,n);
 		v.rotate(radians(-90));
 		v.normalize();
@@ -151,25 +154,27 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 			var next = 0;
 			for (var cur = 0; cur<poly.length;cur++) {
 				// for each line
+				// v:vector p:point r:radius
 				next = cur+1;
 				if (next == poly.length) next = 0;
 				var vc = poly[cur];    // c for "current"
-				var vn = poly[next];       // n for "next"
+				var vn = poly[next];   // n for "next"
 				var col;
 				col = collidePointCircle(vc.x,vc.y,px+vx,py+vy,pr);
 				if (col) { // if collide corner
 					var prev = cur-1;
 					if(cur===0)prev=poly.length-1;
-					var vp = poly[prev];
+					var vp = poly[prev]; // p for "previous"
 					var nrv = get_radius_vector(vc,vn,pr/2);
 					var prv = get_radius_vector(vp,vc,pr/2);
-					// FIX:
+					
 					var p1 = createVector(px,py);
 					var pd = p5.Vector.add(p1,createVector(vx,vy));
 					var vp2 = p5.Vector.sub(pd,vc);
 					vp2.normalize();
 					vp2.mult(pr/2);
 					var p2 = p5.Vector.add(vp2,vc);
+					
 					if(this._debug){
 						var v = vc.copy();
 						v.z = pr;
@@ -182,16 +187,22 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 					var an = degrees(nrv.heading()+2*PI);
 					var ap = degrees(prv.heading()+2*PI);
 					var ad = degrees(vp2.heading()+2*PI);
-					if(an<350)an+=360;
-					if(ap<350)ap+=360;
-					if(ad<350)ad+=360;
+					if(an<360)an+=360;
+					if(ap<360)ap+=360;
+					if(ad<360)ad+=360;
+
+					if(an>ap)ap+=360; // if bounding angles cross
+					if(ap>=ad+360&&ad+360>=an)ad+=360; //if d angle is cross
+					
 					if(this._debug) {
 						console.log(an,ap,ad);
-						if(ap>=ad&&ad>=an)console.log('hit');
+						console.log(ap-an);
+						if(ap>=ad&&ad>=an&&ap-an<180)console.log('hit');
 					}
-					if(ap>=ad&&ad>=an)last_mv=p5.Vector.sub(p2,p1);
-					if(ap>=ad&&ad>=an)return p5.Vector.sub(p2,p1);
+					// ap>ad>an && angle between an,ap < 180w
+					if(ap>=ad&&ad>=an&&ap-an<180)return p5.Vector.sub(p2,p1);
 				}
+
 				col = collideLineCircle(vc.x,vc.y, vn.x,vn.y, px+vx,py+vy,pr);
 				if (col) { // if collide line
 					// calculations
@@ -199,7 +210,7 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 					var vr = get_radius_vector(vc,vn,pr/2);
 					var l1 = p5.Vector.add(vc,vr);
 					var l2 = p5.Vector.add(vn,vr);
-					// l2.add(p5.Vector.sub(l2,l1));
+
 					var p2 = collideLineLine(px,py,px+d.x,py+d.y,l1.x,l1.y,l2.x,l2.y,true);
 					if(!p2.x)p2=createVector(px,py);
 					p2 = createVector(p2.x,p2.y);
@@ -255,6 +266,7 @@ Terrain.prototype.loadmap = function (url) {
 		}
 		for (var i = json.entities.length -1;i>=0;i--) {
 			var ent = json.entities[i];
+			// FIX: use lookup not if; else if
 			if (ent.type == 'Tree') {
 				entities.push(new Tree(createVector(ent.pos[0],ent.pos[1])));
 			}else if (ent.type == 'Grass') {
