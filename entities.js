@@ -8,7 +8,6 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
 */
 
-
 // -=-=-=-=- NPC -=-=-=- 
 //
 // Args:
@@ -125,13 +124,15 @@ NPC.prototype.do_check = function (p) {
 	}
 };
 NPC.prototype.get_text = function () {
-	var index = this.txt_ord++ % this.data.text.default.length;
+	var index = this.txt_ord;
 	var ret_text;
+	var ret_prop;
 	var self = this;
 	try {
 		for (var prop in this.data.text) {
 			if (prop == 'default' || this.flags['text_state'] === prop) {
 				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
 			}
 		}
 		var objCallback = function (obj) {
@@ -150,6 +151,10 @@ NPC.prototype.get_text = function () {
 				// ret_text[i] = "function";
 
 			}
+		}
+		if(this.flags['repeatln']!==true) {
+			this.txt_ord++;
+			if(index == this.data.text[ret_prop].length-1)this.txt_ord = 0;
 		}
 		return ret_text || ['Default text.'];
 	}catch (err) {
@@ -371,3 +376,64 @@ Grass.prototype.draw = function () {
 };
 
 
+
+// -=-=-=-=- Tombstone -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// size:<int>
+//
+var Tombstone = function (pos, typ) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.w = map(Math.random(),0,1,5,15);
+	this.sway = map(Math.random(),0,1,-this.w/4,this.w/4);
+
+	// generation //
+	
+};
+Tombstone.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Tombstone.prototype.draw = function () {
+	push();
+	fill(200);
+	ellipse(this.x, this.y, this.w, this.w);
+	pop();
+};
+Tombstone.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
+		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
+		var kp_id = windows.newKeyPress(function (key) {
+			if (key == 'T') {
+				windows.windows[win].next();
+			}
+		});
+		var self = this;
+		windows.windows[win].unload = function () {
+			self.flags['talking'] = false;
+			windows.kp[kp_id] = null;
+		};
+		this.flags['talking'] = true;
+	}
+};
+Tombstone.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,50)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
+};

@@ -59,7 +59,7 @@ House.prototype.draw = function () {
 	push();
 	fill(10);
 	// draw wall
-	quad(this.x-this.w/2,this.y,this.x-this.w/3+this.sway,this.y-this.h,this.x+this.w/3+this.sway,this.y-this.h,this.x+this.w/2,this.y);
+	quad(this.x-this.w/2,this.y,this.x-this.w*(0.4)+this.sway,this.y-this.h,this.x+this.w*(0.4)+this.sway,this.y-this.h,this.x+this.w/2,this.y);
 	// draw roof
 	triangle(this.x-this.w/2+this.sway,this.y-this.h,this.x+this.sway+this.rsway,this.y-this.h-40,this.x+this.w/2+this.sway,this.y-this.h);
 	// draw door

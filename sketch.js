@@ -33,8 +33,6 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new House(createVector(636,171)));
-
 }
 
 // -=-=- Draw -=- Main Game Loop -=-=- //
@@ -206,7 +204,32 @@ function keyPressed() {
 }
 
 function mousePressed() { // For debug use !?!?! //
-	console.log('mouse:', mouseX, mouseY);
+	// console.log('mouse:', mouseX, mouseY);
 	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
+
+
+/*
+// Loaded check
+var load_count = 100;
+while (true) {
+	// Checks if an obj from each src is defined
+	var loaded = true;
+	var checks = [
+		typeof Game,
+		typeof Terrain,
+		typeof Windows,
+		typeof Camera,
+		typeof EntitiesLoaded,
+		typeof BuildingEntity,
+		typeof Player
+	];
+	for (var i = checks.length - 1; i >= 0; i--) {
+		if (checks[i] == 'undefined') loaded = false;
+	}
+	if(loaded || load_count <= 0)break;
+	load_count--;
+}
+*/
+
 new p5();
