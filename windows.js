@@ -1,5 +1,17 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Windows -=-				//
+//											//
+// Handles all gui Windows					//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
+
+
 var ord = 0;
 
+// -=-=-=-=- Windows -=-=-=- 
+//
 var Windows = function () {
 	this.windows = [];
 	this.kp = [];
@@ -16,6 +28,7 @@ var Windows = function () {
 		}
 	};
 };
+// -=- Windows Functions -=- //
 Windows.prototype.update = function () {
 	this.animate();
 };
