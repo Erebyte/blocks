@@ -1,5 +1,18 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Buildings -=-			//
+//											//
+// all buildings must be a subclass of		//
+// BuildingEntity							//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
 
 
+// -=-=- Logos -=-=- //
+// 
+// Handles drawing the logos.
+//
 var Logos = function () {
 	this.logos = [
 		{
@@ -44,6 +57,7 @@ var Logos = function () {
 	this.current = 0;
 
 };
+// Logo Functions //
 Logos.prototype.update = function () {
 	if (this.current < this.logos.length) {
 		this.animate();
@@ -63,9 +77,19 @@ Logos.prototype.animate = function () {
 };
 
 
-var GameObject = function () {
-	this.flags = {};
+// -=-=- Game Object -=-=- //
+// 
+// Args:
+// ----
+// 
+// entity_data:{
+//		[flags:<obj(dict)>]
+// }
+//
+var GameObject = function (entity_data) {
+	this.flags = entity_data.flags || {};
 };
+// -=- Game Object Functions -=- //
 GameObject.prototype.remove = function () {
 	// remove sudo function //
 };
@@ -77,8 +101,21 @@ GameObject.prototype.setFlag = function (flag, value) {
 };
 
 
+// -=-=- Game Entity -=-=- //
+// 
+// Args:
+// ----
+// 
+// entity_data:{
+//		...(see 'GameObject')
+//		[data:<obj(dict)>]
+//		[x:<int>] (default:0)
+//		[y:<int>] (default:0)
+//		[attribs:<obj(dict)>]
+// }
+//
 var GameEntity = function (entity_data) {
-	GameObject.call(this);
+	GameObject.call(this, entity_data);
 	
 	this.data = entity_data || {};
 	this.x = entity_data.x || 0;
@@ -87,6 +124,8 @@ var GameEntity = function (entity_data) {
 	this.attribs = entity_data.attribs || {};
 };
 GameEntity.prototype = Object.create(GameObject.prototype);
+
+// -=- Game Entity Functions -=- //
 GameEntity.prototype.setAttribute = function (attr, value) {
 	this.attribs[attr] = value;
 };
@@ -103,6 +142,9 @@ GameEntity.prototype.animate = function () {
 GameEntity.prototype.collide = function () {return false;};
 
 /* // -=-=- Main Game Object -=-=- // */
+// 
+// Main Game Object...
+//
 var Game = function () {
 	this.gamestate = 'logo';
 	this.debug_mode = false;
@@ -113,6 +155,7 @@ var Game = function () {
 		"flag" : true
 	};
 };
+// -=- Game Functions -=- //
 Game.prototype.update = function () {
 	if(this.debug_mode) {
 		this._fps_hystory.push(frameRate());

@@ -1,3 +1,25 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Buildings -=-			//
+//											//
+// all buildings must be a subclass of		//
+// BuildingEntity							//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
+
+
+// -=-=- Building Entity -=-=- //
+// 
+// Args:
+// ----
+//
+// entity_data:{
+//		...(see 'TerrainEntity')
+//		w:width
+//		h:height
+// }
+//
 var BuildingEntity = function (entity_data) {
 	TerrainEntity.call(this, entity_data);
 	this.w = entity_data.w;
@@ -6,6 +28,15 @@ var BuildingEntity = function (entity_data) {
 BuildingEntity.prototype = Object.create(TerrainEntity.prototype);
 
 
+// -=-=-=-=- TREE -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// door_offsett:<int> (default:0)
+// width:<int> (default:200)
+//
 var House = function (pos, door_offset, width) {
 	BuildingEntity.call(this, {
 		x:pos.x,
@@ -19,6 +50,8 @@ var House = function (pos, door_offset, width) {
 	this.door_offset = door_offset || 0;
 };
 House.prototype = Object.create(BuildingEntity.prototype);
+
+// -=- House Functions -=- //
 House.prototype.collide = function (px,py,pr) {
 	return collideRectCircle(this.x-this.w/2,this.y-40,this.w,40, px,py,pr);
 };

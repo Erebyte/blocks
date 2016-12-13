@@ -1,3 +1,12 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+//				-=- Terrain -=-			   //
+//										   //
+// doc string thing						   //
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+*/
+
+// Globals and Constants //
 var game;
 var player;
 var windows;
@@ -6,8 +15,11 @@ var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
 
-var house;
 
+// -=-=- Setup Function -=-=- //
+// 
+// called once after loaded
+//
 function setup () {
 	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
@@ -21,16 +33,14 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	house = new House(createVector(636,171));
-	entities.push(house);
+	entities.push(new House(createVector(636,171)));
 
-	// extra //
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'boy'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'female'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'male'}));
 }
 
+// -=-=- Draw -=- Main Game Loop -=-=- //
+//
+// doc string thing
+//
 function draw () {
 	// body...
 	if (game.gamestate == "logo") {
@@ -122,11 +132,15 @@ function draw () {
 	}
 }
 
+
+// -=-=- Functions -=-=- //
 function blit(itm, w) {
+	// adds an entity to a draw queue with draw weight 'w'
 	draw_q.push([itm, w]);
 }
 
 function draw_blitz () {
+	// draw queue based on weight
 	draw_q = draw_q.sort(function(a,b){return a[1]-b[1];});
 	for (i = 0; i < draw_q.length; i++) {
 		draw_q[i][0].draw();
@@ -134,6 +148,7 @@ function draw_blitz () {
 }
 
 function pushNPC (npc) {
+	// push an npc onto the entity list
 	entities.push(npc);
 }
 
@@ -190,11 +205,8 @@ function keyPressed() {
 	console.log(keyCode + " : " + key);
 }
 
-function mousePressed() {
-	// player.x = mouseX;
-	// player.y = mouseY;
-	// console.log(mouseX, mouseY);
-	// console.log(player.x, player.y);
-	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+function mousePressed() { // For debug use !?!?! //
+	console.log('mouse:', mouseX, mouseY);
+	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 new p5();

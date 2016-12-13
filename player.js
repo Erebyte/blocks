@@ -1,3 +1,14 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+//				-=- Player -=-			   //
+//										   //
+// doc string thing						   //
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+*/
+
+
+// -=-=-=-=- Player -=-=-=- //
+//
 var Player = function () {
 	this.player_name = "tommosfool";
 
@@ -19,6 +30,8 @@ var Player = function () {
 	};
 	this.path = [];
 };
+
+// -=-  Player Functions -=- //
 Player.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);

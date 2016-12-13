@@ -1,3 +1,30 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Entities -=-			//
+//											//
+// all entities must be a subclass of		//
+// GameEntiy or TerrainEntity				//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
+
+
+// -=-=-=-=- NPC -=-=-=- 
+//
+// Args:
+// -----
+//
+// data:{
+//		x:pos.x
+//		y:pos.y
+//		gender:'male'||'female'||'boy'||'girl'
+//		name:<string>
+//		surname:<string>
+//		[w:width]
+//		[h:height]
+//		[flags:<obj(dict)>]
+// }
+//
 var NPC = function (data) {
 	GameEntity.call(this, data);
 
@@ -14,8 +41,8 @@ var NPC = function (data) {
 	var s = 0;
 	var b = 0;
 	if (this.gender == 'male') {
-		b = random(15, 50);
 		s = random(20, 50);
+		b = random(15, 50);
 		this.h+=floor(random(4));
 	}else if (this.gender == 'female') {
 		s = random(20, 50);
@@ -36,23 +63,10 @@ var NPC = function (data) {
 	this.color_h = h;
 	this.color_s = s;
 	this.color_b = b;
-	
-	// var names = [
-	// 	'paul',
-	// 	'larry',
-	// 	'joe',
-	// 	'merch',
-	// 	'king',
-	// 	'herold',
-	// 	'bumbersnatch',
-	// 	'your mum',
-	// 	'mike hawk',
-	// 	'bob',
-	// 	'elisia woooooooooooooood'
-	// ];
-	// this.npc_name = names[round(random(names.length-1))];
 };
 NPC.prototype = Object.create(GameEntity.prototype);
+
+// -=- Functions -=- //
 NPC.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
@@ -144,13 +158,22 @@ NPC.prototype.get_text = function () {
 };
 
 
+// -=-=-=-=- TREE -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
 var Tree = function (pos, w, size) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
 	size = size || 1;
-	this.w = w || map(Math.random(),0,1,30,50);
+	this.w = w || random(30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
 	this.sway = (Math.random()*2-1)*15;
@@ -162,12 +185,11 @@ var Tree = function (pos, w, size) {
 	this.generate();
 };
 Tree.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
 Tree.prototype.draw = function () {
-	// console.log('tree',this.x,this.y);
 	push();
-	// stroke(255);
 	noStroke();
-	// fill(204,153,0);
 	colorMode(HSB, 360, 100, 100);
 	for (var i = this.points.length - 1; i >= 0; i--) {
 		var p = this.points[i];
@@ -268,6 +290,14 @@ Tree.prototype.generate = function () {
 };
 
 
+// -=-=-=-=- GRASS -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// size:<int>
+//
 var Grass = function (pos, size) {
 	TerrainEntity.call(this, {
 		x:pos.x,
@@ -279,9 +309,8 @@ var Grass = function (pos, size) {
 	this.points = [];
 	this.leaves = [];
 
+	// functions //
 	var gen_point = function(angle, l) {
-		// var t = angle * (PI/180);
-		// return createVector(l*Math.sin(t),l*Math.cos(t));
 		var p  = p5.Vector.fromAngle(radians(angle+90));
 		p.mult(l);
 		return p;
@@ -301,6 +330,8 @@ var Grass = function (pos, size) {
 		p.add(point.x,point.y);
 		return [point.x,point.y,v.x,v.y,p.x,p.y];
 	};
+
+	// generation //
 	for (var i=0;i<=this.bush_size;i++) {
 		var a = map(Math.random(),0,1,-15,15);
 		var l = map(Math.random(),0,1,15,40);
@@ -317,6 +348,8 @@ var Grass = function (pos, size) {
 	}
 };
 Grass.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
 Grass.prototype.draw = function () {
 	push();
 	// draw lines
@@ -336,3 +369,5 @@ Grass.prototype.draw = function () {
 	quad(this.x-this.w/2,this.y,this.x+this.sway,this.y-10,this.x+this.w/2,this.y,this.x,this.y+3);
 	pop();
 };
+
+

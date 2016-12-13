@@ -1,13 +1,37 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+//				-=- Terrain -=-			   //
+//										   //
+// doc string thing						   //
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+*/
+
+
+// -=-=-=-=- TerrainEntity -=-=-=- //
+//
+// Args:
+// ----
+// 
+// entity_data:(see GameEntity)
+//
 var TerrainEntity = function (entity_data) {
 	GameEntity.call(this, entity_data);
 };
 TerrainEntity.prototype = Object.create(GameEntity.prototype);
 
 
+// -=-=-=-=- Fog -=-=-=- //
+//
+// The ambient light around the player
+//
+// NOTE: lights need to go in here too
+//
 var Fog = function () {
 	this.depth = 10;
 	this.tri = [
+		//clock wise
 		[658, 265, 229, 536, 160, 114],
+		[519, 173, 569, 537, 210, 396],
 		[347, 81, 664, 448, 71, 401],
 		[308, 41, 675, 222, 361, 535],
 		[65, 277, 583, 126, 539, 443],
@@ -50,10 +74,44 @@ var Fog = function () {
 		[632, 424, 141, 411, 359, 147],
 		[548, 418, 177, 405, 388, 126],
 		[566, 403, 159, 375, 385, 121],
-		[522, 408, 144, 392, 423, 116]
+		[522, 408, 144, 392, 423, 116],
+		[388, 74, 501, 328, 235, 315],
+		[455, 67, 544, 384, 254, 317],
+		[369, 121, 543, 404, 207, 370],
+		[353, 112,544, 346,173, 357],
+		[247, 135,547, 336,188, 377],
+		[339, 108,554, 332,164, 432],
+		[302, 132,471, 421,263, 350],
+		[457, 121,586, 377,148, 391],
+		[482, 73,619, 390,114, 378],
+		[386, 49,593, 394,17, 399],
+		[215, 86,591, 387,388, 427],
+		[394, 176,549, 256,400, 385],
+		[284, 153,604, 212,402, 420],
+		[123, 166,583, 143,478, 430],
+		[268, 268,578, 71,424, 322],
+		[205, 199,633, 177,441, 409],
+		[229, 289,557, 112,591, 401],
+		[243, 309,444, 88,590, 492],
+		[316, 395,353, 136,589, 377],
+		[324, 399,357, 114,613, 327],
+		[343, 419,314, 131,626, 216],
+		[195, 419,274, 125,608, 404],
+		[263, 420,257, 135,619, 248],
+		[290, 478,220, 173,655, 143],
+		[429, 396,231, 201,537, 165],
+		[404, 441,183, 209,515, 59],
+		[539, 430,150, 326,469, 24],
+		[563, 322,233, 371,353, 139],
+		[621, 441,225, 470,444, 210],
+		[548, 313,265, 362,288, 94],
+		[556, 235,471, 372,255, 260],
+		[474, 128,468, 387,249, 319]
 	];
 	this.tris = [];
 };
+
+// -=- Fog Function -=- //
 Fog.prototype.draw = function (plr,cmr) {
 	var xoff = plr.x-cmr.x+20;
 	var yoff = plr.y-cmr.y-20;
@@ -89,13 +147,25 @@ Fog.prototype.update = function () {
 };
 
 
-
+// -=-=-=-=- Terrain -=-=-=- //
+//
+// Handles loading and drawing terrain, 
+//     and handles terrain collision.
+//
 var Terrain = function () {
 	this._debug = false;
 	this._debug_dat = [];
 	this.map_data = [];
 	this.fog = new Fog();
 
+};
+
+// -=- Terrain Functions -=- //
+Terrain.prototype.setFog_depth = function (depth) {
+	this.fog.depth = depth;
+};
+Terrain.prototype.toggleDebug = function () {
+	this._debug = !this._debug;
 };
 Terrain.prototype.draw = function (xoff, yoff) {
 	push();
@@ -112,9 +182,6 @@ Terrain.prototype.draw = function (xoff, yoff) {
 		endShape(CLOSE);
 	}
 	pop();
-};
-Terrain.prototype.toggleDebug = function () {
-	this._debug = !this._debug;
 };
 Terrain.prototype.draw_debug = function () {
 	push();
@@ -246,7 +313,9 @@ Terrain.prototype.collide = function (px, py, pr, vx, vy) {
 	}
 	return false;
 };
+// -=- Load Map Function -=- //
 Terrain.prototype.loadmap = function (url) {
+
 	var self = this;
 	loadJSON(url, function (json) {
 		// console.log(json);
@@ -274,7 +343,4 @@ Terrain.prototype.loadmap = function (url) {
 			}
 		}
 	});
-};
-Terrain.prototype.setFog_depth = function (depth) {
-	this.fog.depth = depth;
 };
