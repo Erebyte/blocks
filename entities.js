@@ -383,26 +383,72 @@ Grass.prototype.draw = function () {
 // ----
 // 
 // pos:<vector2>
-// size:<int>
+// typ:<int:0,3>
 //
 var Tombstone = function (pos, typ) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
-	this.w = map(Math.random(),0,1,5,15);
-	this.sway = map(Math.random(),0,1,-this.w/4,this.w/4);
-
-	// generation //
-	
+	console.log(typ);
+	if(typ !== null){ // cause or picks greater?
+		this.typ = typ;
+	}else{
+		this.typ = random([0,1,2,3]);
+	}
+	this.col = Math.floor(random(50,120));
+	this.w = random(20,25);
+	this.h = random(30,40);
+	this.sway = random(-this.w/4,this.w/4);
 };
 Tombstone.prototype = Object.create(TerrainEntity.prototype);
 
 // -=- Functions -=- //
 Tombstone.prototype.draw = function () {
+	var p1 = createVector(this.x-this.w/2,this.y);
+	var p2 = createVector(this.x-this.w/2+this.sway-5,this.y-this.h-this.sway);
+	var p3 = createVector(this.x+this.w/2+this.sway+5,this.y-this.h+this.sway);
+	var p4 = createVector(this.x+this.w/2,this.y);
 	push();
-	fill(200);
-	ellipse(this.x, this.y, this.w, this.w);
+	fill(this.col);
+	switch (this.typ) {
+		case 0:
+			quad(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,p4.x,p4.y);
+			break;
+		case 1:
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			vertex(this.x+this.sway/2,this.y-this.h-10);
+			vertex(p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			break;
+		case 2:
+			var v1 = p5.Vector.sub(p2,p1);
+			var v2 = p5.Vector.sub(p3,p4);
+			v1.mult(0.6);
+			v2.mult(0.6);
+			var p5_ = p5.Vector.add(p2,v1);
+			var p6 = p5.Vector.add(p3,v2);
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			bezierVertex(p5_.x,p5_.y,p6.x,p6.y,p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			break;
+		case 3:
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			vertex(this.x+this.sway/2,this.y-this.h-20);
+			vertex(p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			ellipse(this.x+this.sway/2, this.y-this.h-20, this.w, this.w);
+			break;
+	}
 	pop();
 };
 Tombstone.prototype.check = function () {

@@ -22,7 +22,10 @@
 		{"type":"Grass", "pos":[695,245], "size": 15},
 		{"type":"House", "pos":[636,171]},
 		{"type":"House", "pos":[701,-76]},
-		{"type":"Tombstone", "pos":[22,358]}
+		{"type":"Tombstone", "pos":[22,358], "typ":0},
+		{"type":"Tombstone", "pos":[91,376], "typ":1},
+		{"type":"Tombstone", "pos":[91,478], "typ":2},
+		{"type":"Tombstone", "pos":[22,478], "typ":3}
 
 	],
 	"npcs" : [
