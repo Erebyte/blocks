@@ -7,6 +7,7 @@
 */
 
 // Globals and Constants //
+var VERSION = 'pra-alpha:0.4.5';
 var game;
 var player;
 var windows;
@@ -58,6 +59,8 @@ function draw () {
 		textFont("Georgia");
 		textSize(40);
 		text("Spacebar to play", width/2, height/2);
+		textSize(12);
+		text("Version "+VERSION, width*0.85, height*0.95);
 		pop();
 	}else if (game.gamestate == "pregame"){
 		background(30);
@@ -199,6 +202,7 @@ function keyPressed() {
 		}
 		if(key == '1') game.toggleDebug();
 		if(key == '2') terrain.toggleDebug();
+		if(key == 'E' && !windows.open_window) windows.menu.open();
 	}
 	console.log(keyCode + " : " + key);
 }
