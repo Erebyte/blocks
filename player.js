@@ -1,3 +1,14 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+//				-=- Player -=-			   //
+//										   //
+// doc string thing						   //
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+*/
+
+
+// -=-=-=-=- Player -=-=-=- //
+//
 var Player = function () {
 	this.player_name = "tommosfool";
 
@@ -19,6 +30,8 @@ var Player = function () {
 	};
 	this.path = [];
 };
+
+// -=-  Player Functions -=- //
 Player.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
@@ -50,10 +63,12 @@ Player.prototype.update = function () {
 		if (keyIsDown(68)){//d
 			mx += 1;
 		}
-		this.move(mx, my);
-		if (this.collide(mx,my)) {
-			this.unmove();
-			// this.move(mx,my);
+		// this.move(mx, my);
+		if (mx!==0 || my!==0){
+			if (!this.collide(this.get_move(mx,my))) {
+				// this.unmove();
+				this.move(mx,my);
+			}
 		}
 
 		this.flags['check'] = false;
@@ -66,28 +81,44 @@ Player.prototype.update = function () {
 		}
 	}
 };
-Player.prototype.collide = function (vx,vy) {
-	var res;
-	res = terrain.collide(this.x,this.y,this.w,vx,vy);
-	if(res)return true;
+Player.prototype.collide = function (vec) {
+	var ret = false;
+	var mv;
+	var result;
+	result = terrain.collide(this.x,this.y,this.w,vec.x,vec.y);
+	if(result){
+		if(result !== true) {
+			vec = result;
+			mv = true;
+		}
+		ret = true;
+	}
 
 	for (var i = entities.length - 1; i >= 0; i--) {
 		if (collidePointPoint(this.x,this.y,entities[i].x,entities[i].y,200)) {
-			res = entities[i].collide(this.x,this.y,this.w);
-			if(res)return true;
+			result = entities[i].collide(this.x+vec.x,this.y+vec.y,this.w);
+			if(result){
+				ret = true;
+				mv = false;
+			}
 		}
 	}
-	return false;
+	if(mv)this.move(vec.x,vec.y,1);
+	return ret;
+};
+Player.prototype.get_move = function (x, y, spd) {
+	spd = spd || this.attribs['speed'] + (this.flags['spd_buf'] || 0);
+	return createVector(x*spd, y*spd);
 };
 Player.prototype.move = function (x, y, spd) {
-	spd = spd || this.attribs['speed'] + (this.flags['spd_buf'] || 0);
-	this.x += x*spd;
-	this.y += y*spd;
+	var vec = this.get_move(x,y,spd);
+	this.x += vec.x;
+	this.y += vec.y;
 	var maxPath = 10;
-	for (var i = 1; i < maxPath; i++) {
-		this.path[i-1] = this.path[i];
-	}
 	this.path.push([x, y, spd]);
+	if (this.path.length>maxPath) {
+		this.path = this.path.slice(1);
+	}
 };
 Player.prototype.unmove = function () {
 	var path = this.path[this.path.length-1];

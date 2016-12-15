@@ -1,3 +1,13 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+//				-=- Terrain -=-			   //
+//										   //
+// doc string thing						   //
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
+*/
+
+// Globals and Constants //
+var VERSION = 'pra-alpha:0.4.5';
 var game;
 var player;
 var windows;
@@ -6,8 +16,11 @@ var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
 
-var house;
 
+// -=-=- Setup Function -=-=- //
+// 
+// called once after loaded
+//
 function setup () {
 	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
@@ -21,16 +34,12 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	house = new House(createVector(636,171));
-	entities.push(house);
-
-	// extra //
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'girl'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'boy'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'female'}));
-	// npcs.push(new NPC({x:random(width), y:random(height), gender:'male'}));
 }
 
+// -=-=- Draw -=- Main Game Loop -=-=- //
+//
+// doc string thing
+//
 function draw () {
 	// body...
 	if (game.gamestate == "logo") {
@@ -50,6 +59,8 @@ function draw () {
 		textFont("Georgia");
 		textSize(40);
 		text("Spacebar to play", width/2, height/2);
+		textSize(12);
+		text("Version "+VERSION, width*0.85, height*0.95);
 		pop();
 	}else if (game.gamestate == "pregame"){
 		background(30);
@@ -117,17 +128,20 @@ function draw () {
 		terrain.fog.draw(player, camera);
 		windows.draw();
 		
-		if(game.debug_mode){
-			game.draw_debug();
-		}
+		if(terrain._debug)terrain.draw_debug();
+		if(game.debug_mode)game.draw_debug();
 	}
 }
 
+
+// -=-=- Functions -=-=- //
 function blit(itm, w) {
+	// adds an entity to a draw queue with draw weight 'w'
 	draw_q.push([itm, w]);
 }
 
 function draw_blitz () {
+	// draw queue based on weight
 	draw_q = draw_q.sort(function(a,b){return a[1]-b[1];});
 	for (i = 0; i < draw_q.length; i++) {
 		draw_q[i][0].draw();
@@ -135,6 +149,7 @@ function draw_blitz () {
 }
 
 function pushNPC (npc) {
+	// push an npc onto the entity list
 	entities.push(npc);
 }
 
@@ -185,18 +200,40 @@ function keyPressed() {
 		}else {
 			windows.keyPressed(key);
 		}
-		if(key == '1') {
-			game.toggleDebug();
-		}
+		if(key == '1') game.toggleDebug();
+		if(key == '2') terrain.toggleDebug();
+		if(key == 'E' && !windows.open_window) windows.menu.open();
 	}
 	console.log(keyCode + " : " + key);
 }
 
-function mousePressed() {
-	// player.x = mouseX;
-	// player.y = mouseY;
-	// console.log(mouseX, mouseY);
-	// console.log(player.x, player.y);
-	console.log(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+function mousePressed() { // For debug use !?!?! //
+	// console.log('mouse:', mouseX, mouseY);
+	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
+
+
+/*
+// Loaded check
+var load_count = 100;
+while (true) {
+	// Checks if an obj from each src is defined
+	var loaded = true;
+	var checks = [
+		typeof Game,
+		typeof Terrain,
+		typeof Windows,
+		typeof Camera,
+		typeof EntitiesLoaded,
+		typeof BuildingEntity,
+		typeof Player
+	];
+	for (var i = checks.length - 1; i >= 0; i--) {
+		if (checks[i] == 'undefined') loaded = false;
+	}
+	if(loaded || load_count <= 0)break;
+	load_count--;
+}
+*/
+
 new p5();

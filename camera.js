@@ -1,5 +1,15 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Camera -=-				//
+//											//
+// custom camera class cause i dont need	//
+// p5's camera class.						//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
 
 
+// -=-=-=-=- Camera -=-=-=- //
 function Camera() {
 	this.x = 20;
 	this.y = 20;
@@ -13,9 +23,9 @@ function Camera() {
 			this.move(this.x+this.bound_width/2 - p.x, 0);
 		}
 		if (this.y-this.bound_height/2 > p.y) {
-			this.move(0, this.y-this.bound_height/2 - p.y, 0);
+			this.move(0, this.y-this.bound_height/2 - p.y);
 		}else if (p.y > this.y+this.bound_height/2) {
-			this.move(0, this.y+this.bound_height/2 - p.y, 0);
+			this.move(0, this.y+this.bound_height/2 - p.y);
 		}
 	};
 

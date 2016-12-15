@@ -6,20 +6,27 @@
 		]
 	},
 	"entities" : [
-		{"type" : "Tree","pos":[43,-89]},
-		{"type" : "Tree","pos":[-239,-204]},
-		{"type" : "Tree","pos":[277,-203]},
-		{"type" : "Tree","pos":[284,233]},
-		{"type" : "Tree","pos":[-220,223]},
-		{"type" : "Tree","pos":[501,-16]},
-		{"type" : "Tree","pos":[857,41]},
-		{"type" : "Grass","pos":[31,-2],"size":5},
-		{"type" : "Grass","pos":[94,251],"size": 3},
-		{"type" : "Grass","pos":[140,160],"size": 10},
-		{"type" : "Grass","pos":[60,-82],"size": 5},
-		{"type" : "Grass","pos":[30,-81],"size": 4},
-		{"type" : "Grass","pos":[569,240],"size": 15},
-		{"type" : "Grass","pos":[695,245],"size": 15}
+		{"type":"Tree", "pos":[43,-89]},
+		{"type":"Tree", "pos":[-239,-204]},
+		{"type":"Tree", "pos":[277,-203]},
+		{"type":"Tree", "pos":[284,233]},
+		{"type":"Tree", "pos":[-220,223]},
+		{"type":"Tree", "pos":[501,-16]},
+		{"type":"Tree", "pos":[857,41]},
+		{"type":"Grass", "pos":[31,-2], "size":5},
+		{"type":"Grass", "pos":[94,251], "size": 3},
+		{"type":"Grass", "pos":[140,160], "size": 10},
+		{"type":"Grass", "pos":[60,-82], "size": 5},
+		{"type":"Grass", "pos":[30,-81], "size": 4},
+		{"type":"Grass", "pos":[569,240], "size": 15},
+		{"type":"Grass", "pos":[695,245], "size": 15},
+		{"type":"House", "pos":[636,171]},
+		{"type":"House", "pos":[701,-76]},
+		{"type":"Tombstone", "pos":[22,358], "typ":0},
+		{"type":"Tombstone", "pos":[91,376], "typ":1},
+		{"type":"Tombstone", "pos":[91,478], "typ":2},
+		{"type":"Tombstone", "pos":[22,478], "typ":3}
+
 	],
 	"npcs" : [
 		{
@@ -41,8 +48,23 @@
 				"help" : [
 					["G-Go k-k-kill them q-quickly"],
 					["H-H-Hurry I'm too y-young to d-d-d..."],
-					["Please I'll do whatever you want if you save me"],
-					["S-s-ssseriously... save me...", "Please", {"setflag":{"promice":true, "repeatln":true}}]
+					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "promice":true}}],
+					["S-s-ssseriously... save me...", "Please"]
+				]
+			}
+		},
+		{
+			"name" : "Aurthur",
+			"surname" : "Butthole",
+			"age" : 15,
+			"x" : 547,
+			"y" : 291,
+			"gender" : "boy",
+			"flags" : {},
+			"text" : {
+				"default" : [
+					["Hi, how's it goin'\nI like the way you walk","Wanna be friends?","CREATE YES/NO BOX PLZ!", "Really!?\nYou will?"],
+					["If you talk to me when I'm done then I'll follow you around", "For now, just leave me be"]
 				]
 			}
 		}

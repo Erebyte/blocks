@@ -1,3 +1,29 @@
+/*
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
+//				-=- Entities -=-			//
+//											//
+// all entities must be a subclass of		//
+// GameEntiy or TerrainEntity				//
+//											//
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
+*/
+
+// -=-=-=-=- NPC -=-=-=- 
+//
+// Args:
+// -----
+//
+// data:{
+//		x:pos.x
+//		y:pos.y
+//		gender:'male'||'female'||'boy'||'girl'
+//		name:<string>
+//		surname:<string>
+//		[w:width]
+//		[h:height]
+//		[flags:<obj(dict)>]
+// }
+//
 var NPC = function (data) {
 	GameEntity.call(this, data);
 
@@ -14,8 +40,8 @@ var NPC = function (data) {
 	var s = 0;
 	var b = 0;
 	if (this.gender == 'male') {
-		b = random(15, 50);
 		s = random(20, 50);
+		b = random(15, 50);
 		this.h+=floor(random(4));
 	}else if (this.gender == 'female') {
 		s = random(20, 50);
@@ -36,23 +62,10 @@ var NPC = function (data) {
 	this.color_h = h;
 	this.color_s = s;
 	this.color_b = b;
-	
-	// var names = [
-	// 	'paul',
-	// 	'larry',
-	// 	'joe',
-	// 	'merch',
-	// 	'king',
-	// 	'herold',
-	// 	'bumbersnatch',
-	// 	'your mum',
-	// 	'mike hawk',
-	// 	'bob',
-	// 	'elisia woooooooooooooood'
-	// ];
-	// this.npc_name = names[round(random(names.length-1))];
 };
 NPC.prototype = Object.create(GameEntity.prototype);
+
+// -=- Functions -=- //
 NPC.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
@@ -111,13 +124,15 @@ NPC.prototype.do_check = function (p) {
 	}
 };
 NPC.prototype.get_text = function () {
-	var index = this.txt_ord++ % this.data.text.default.length;
+	var index = this.txt_ord;
 	var ret_text;
+	var ret_prop;
 	var self = this;
 	try {
 		for (var prop in this.data.text) {
 			if (prop == 'default' || this.flags['text_state'] === prop) {
 				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
 			}
 		}
 		var objCallback = function (obj) {
@@ -137,6 +152,10 @@ NPC.prototype.get_text = function () {
 
 			}
 		}
+		if(this.flags['repeatln']!==true) {
+			this.txt_ord++;
+			if(index == this.data.text[ret_prop].length-1)this.txt_ord = 0;
+		}
 		return ret_text || ['Default text.'];
 	}catch (err) {
 		return ['Default text.'];
@@ -144,13 +163,22 @@ NPC.prototype.get_text = function () {
 };
 
 
+// -=-=-=-=- TREE -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
 var Tree = function (pos, w, size) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
 	size = size || 1;
-	this.w = w || map(Math.random(),0,1,30,50);
+	this.w = w || random(30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
 	this.sway = (Math.random()*2-1)*15;
@@ -162,12 +190,11 @@ var Tree = function (pos, w, size) {
 	this.generate();
 };
 Tree.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
 Tree.prototype.draw = function () {
-	// console.log('tree',this.x,this.y);
 	push();
-	// stroke(255);
 	noStroke();
-	// fill(204,153,0);
 	colorMode(HSB, 360, 100, 100);
 	for (var i = this.points.length - 1; i >= 0; i--) {
 		var p = this.points[i];
@@ -268,6 +295,14 @@ Tree.prototype.generate = function () {
 };
 
 
+// -=-=-=-=- GRASS -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// size:<int>
+//
 var Grass = function (pos, size) {
 	TerrainEntity.call(this, {
 		x:pos.x,
@@ -279,9 +314,8 @@ var Grass = function (pos, size) {
 	this.points = [];
 	this.leaves = [];
 
+	// functions //
 	var gen_point = function(angle, l) {
-		// var t = angle * (PI/180);
-		// return createVector(l*Math.sin(t),l*Math.cos(t));
 		var p  = p5.Vector.fromAngle(radians(angle+90));
 		p.mult(l);
 		return p;
@@ -301,6 +335,8 @@ var Grass = function (pos, size) {
 		p.add(point.x,point.y);
 		return [point.x,point.y,v.x,v.y,p.x,p.y];
 	};
+
+	// generation //
 	for (var i=0;i<=this.bush_size;i++) {
 		var a = map(Math.random(),0,1,-15,15);
 		var l = map(Math.random(),0,1,15,40);
@@ -317,6 +353,8 @@ var Grass = function (pos, size) {
 	}
 };
 Grass.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
 Grass.prototype.draw = function () {
 	push();
 	// draw lines
@@ -335,4 +373,113 @@ Grass.prototype.draw = function () {
 	fill(32, 32, 19);
 	quad(this.x-this.w/2,this.y,this.x+this.sway,this.y-10,this.x+this.w/2,this.y,this.x,this.y+3);
 	pop();
+};
+
+
+
+// -=-=-=-=- Tombstone -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// typ:<int:0,3>
+//
+var Tombstone = function (pos, typ) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	console.log(typ);
+	if(typ !== null){ // cause or picks greater?
+		this.typ = typ;
+	}else{
+		this.typ = random([0,1,2,3]);
+	}
+	this.col = Math.floor(random(50,120));
+	this.w = random(20,25);
+	this.h = random(30,40);
+	this.sway = random(-this.w/4,this.w/4);
+};
+Tombstone.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Tombstone.prototype.draw = function () {
+	var p1 = createVector(this.x-this.w/2,this.y);
+	var p2 = createVector(this.x-this.w/2+this.sway-5,this.y-this.h-this.sway);
+	var p3 = createVector(this.x+this.w/2+this.sway+5,this.y-this.h+this.sway);
+	var p4 = createVector(this.x+this.w/2,this.y);
+	push();
+	fill(this.col);
+	switch (this.typ) {
+		case 0:
+			quad(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,p4.x,p4.y);
+			break;
+		case 1:
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			vertex(this.x+this.sway/2,this.y-this.h-10);
+			vertex(p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			break;
+		case 2:
+			var v1 = p5.Vector.sub(p2,p1);
+			var v2 = p5.Vector.sub(p3,p4);
+			v1.mult(0.6);
+			v2.mult(0.6);
+			var p5_ = p5.Vector.add(p2,v1);
+			var p6 = p5.Vector.add(p3,v2);
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			bezierVertex(p5_.x,p5_.y,p6.x,p6.y,p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			break;
+		case 3:
+			beginShape();
+			vertex(p1.x,p1.y);
+			vertex(p2.x,p2.y);
+			vertex(this.x+this.sway/2,this.y-this.h-20);
+			vertex(p3.x,p3.y);
+			vertex(p4.x,p4.y);
+			endShape(CLOSE);
+			ellipse(this.x+this.sway/2, this.y-this.h-20, this.w, this.w);
+			break;
+	}
+	pop();
+};
+Tombstone.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
+		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
+		var kp_id = windows.newKeyPress(function (key) {
+			if (key == 'T') {
+				windows.windows[win].next();
+			}
+		});
+		var self = this;
+		windows.windows[win].unload = function () {
+			self.flags['talking'] = false;
+			windows.kp[kp_id] = null;
+		};
+		this.flags['talking'] = true;
+	}
+};
+Tombstone.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,50)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
 };
