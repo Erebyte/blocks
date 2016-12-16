@@ -136,10 +136,10 @@ NPC.prototype.get_text = function () {
 			return this.get_text();
 		}
 		var objCallback = function (obj) {
-			return function () {
+			return function (w) {
 				for (var func in obj) {
 					if (typeof windows.flagFunctions[func] == 'function') {
-						windows.flagFunctions[func](self, obj[func]);
+						windows.flagFunctions[func](self, w, obj[func]);
 					}
 				}
 			};
@@ -214,20 +214,11 @@ Tree.prototype.draw = function () {
 	pop();
 };
 Tree.prototype.check = function () {
-	if (this.flags['talking'] !== true) {
-		var strs = ['This is a tree...'];
-		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
+	if (this.flags['checking'] !== true) {
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
-		this.flags['talking'] = true;
+		var strs = ['This is a tree...'];
+		var win = windows.newSimple(strs, width/2, height*0.2, width*0.9, height/2*0.60, function () {self.flags['checking'] = false;});
+		this.flags['checking'] = true;
 	}
 };
 Tree.prototype.do_check = function (p) {
@@ -453,20 +444,11 @@ Tombstone.prototype.draw = function () {
 	pop();
 };
 Tombstone.prototype.check = function () {
-	if (this.flags['talking'] !== true) {
-		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
-		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
+	if (this.flags['checking'] !== true) {
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
-		this.flags['talking'] = true;
+		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
+		var win = windows.newSimple(strs, width/2, height*0.2, width*0.9, height/2*0.60, function () {self.flags['checking'] = false;});
+		this.flags['checking'] = true;
 	}
 };
 Tombstone.prototype.do_check = function (p) {

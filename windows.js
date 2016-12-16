@@ -21,7 +21,7 @@ var Windows = function () {
 	this.menu = new GameMenu();
 
 	this.flagFunctions = {
-		setflag : function (obj, args) {
+		setflag : function (obj, win, args) {
 			for (var flag in args) {
 				var value = args[flag];
 				console.log(flag, value);
@@ -33,20 +33,24 @@ var Windows = function () {
 				}
 			}
 		},
-		yesNo:function (obj, args) {
+		yesNo:function (obj, win, args) {
 			var def = args.default || -1;
 			var case_ = args.case;
+			// console.log(win.strs[win.str_i-1], win.kp_id);
+			win.strs.push(win.strs[win.str_i-1]);
+			windows.kp[win.kp_id] = null;
 			
-			var win = windows.newYesNo(width/2, height/2, function (i,k) {
+			windows.newYesNo(width/2, height/2, function (i,k) {
+				win.close();
 				if (k === true) i = def; // continue
 				if (case_[i]) {
 					var ret = case_[i];
-					console.log(ret);
+					// console.log(ret);
 					var objCallback = function (obj_) {
-						return function () {
+						return function (w) {
 							for (var func in obj_) {
 								if (typeof windows.flagFunctions[func] == 'function') {
-									windows.flagFunctions[func](obj, obj_[func]);
+									windows.flagFunctions[func](obj, w, obj_[func]);
 								}
 							}
 						};
@@ -132,7 +136,7 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 			if (this.strs.length > this.str_i) {
 				this.str = this.strs[this.str_i];
 				if (typeof this.str == 'function') {
-					this.str();
+					this.str(this);
 					this.next();
 				}
 			}else {
@@ -167,9 +171,10 @@ Windows.prototype.getFlag = function (id, flag) {
 Windows.prototype.setFlag = function (id, flag, value) {
 	this.windows[id].flags[flag] = value;
 };
-Windows.prototype.newKeyPress = function (f) {
+Windows.prototype.newKeyPress = function (f, w) {
 	var id = this.kp.length;
 	this.kp.push(f);
+	if(w)this.windows[w].kp_id = id;
 	return id;
 };
 Windows.prototype.keyPressed = function (key) {
@@ -203,7 +208,7 @@ Windows.prototype.newSimple = function (str, x, y, w, h, cb) {
 	var win = windows.newWindow(str, x, y, w, h);
 	var kp_id = windows.newKeyPress(function (key) {
 		if (key == 'T' || key == 'E') windows.windows[win].next();
-	});
+	}, win);
 	windows.windows[win].unload = function () {
 		if(cb)cb(this);
 		windows.kp[kp_id] = null;
@@ -230,7 +235,7 @@ Windows.prototype.newSelector = function (x, y, opts, cb) {
 			windows.setFlag(win,'line_select',val);
 		}
 
-	});
+	}, win);
 	windows.windows[win].close = function (p) {
 		if(cb)cb(this.flags['line_select'],p);
 		windows.kp[kp_id] = null;
