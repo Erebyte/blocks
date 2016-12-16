@@ -48,7 +48,7 @@
 				"help" : [
 					["G-Go k-k-kill them q-quickly"],
 					["H-H-Hurry I'm too y-young to d-d-d..."],
-					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "promice":true}}],
+					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "#promice":true}}],
 					["S-s-ssseriously... save me...", "Please"]
 				]
 			}
@@ -63,9 +63,10 @@
 			"flags" : {},
 			"text" : {
 				"default" : [
-					["Hi, how's it goin'\nI like the way you walk","Wanna be friends?","CREATE YES/NO BOX PLZ!", "Really!?\nYou will?"],
-					["If you talk to me when I'm done then I'll follow you around", "For now, just leave me be"]
-				]
+					["Hi, how's it goin'\nI like the way you walk","Wanna be friends?",{"yesNo":{"case":[["Really!?\nYou will?",{"setflag":{"text_state":"follow"}}],["oh...\n\n...okay"]],"default":1}}]
+				],
+				"follow" : [["If you talk to me when I'm done then I'll follow you around", "For now, just leave me be"]],
+				"#promice" : [["You should help her?\nEh..?"]]
 			}
 		}
 	]

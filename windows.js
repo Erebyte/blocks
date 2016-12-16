@@ -25,8 +25,46 @@ var Windows = function () {
 			for (var flag in args) {
 				var value = args[flag];
 				console.log(flag, value);
-				obj.flags[flag] = value;
+				if(flag.slice(0,1)=='#') {
+					// console.log('game flag');
+					game.flags[flag.slice(1)] = value;
+				}else {
+					obj.flags[flag] = value;
+				}
 			}
+		},
+		yesNo:function (obj, args) {
+			var def = args.default || -1;
+			var case_ = args.case;
+			
+			var win = windows.newYesNo(width/2, height/2, function (i,k) {
+				if (k === true) i = def; // continue
+				if (case_[i]) {
+					var ret = case_[i];
+					console.log(ret);
+					var objCallback = function (obj_) {
+						return function () {
+							for (var func in obj_) {
+								if (typeof windows.flagFunctions[func] == 'function') {
+									windows.flagFunctions[func](obj, obj_[func]);
+								}
+							}
+						};
+					};
+					for (var j=0;j<ret.length;j++) {
+						if (typeof ret[j] == 'object' && ret[j] !== null) {
+							var obj_ = ret[j];
+							ret[j] = objCallback(obj_);
+						}
+					}
+					windows.newSimple(ret);
+				}else {
+					console.log('else case');
+					// windows.newSimple(case_[i]);
+				}
+				// console.log(k, i);
+				// console.log(def, case_);
+			});
 		}
 	};
 };
@@ -158,14 +196,19 @@ Windows.prototype.animate = function () {
 // -=-/-=- Windows -=-/-=- //
 
 Windows.prototype.newSimple = function (str, x, y, w, h, cb) {
+	x = x || width/2;
+	y = y || height*0.8;
+	w = w || width*0.9;
+	h = h || height/2*0.60;
 	var win = windows.newWindow(str, x, y, w, h);
 	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'T')	windows.windows[win].next();
+		if (key == 'T' || key == 'E') windows.windows[win].next();
 	});
 	windows.windows[win].unload = function () {
 		if(cb)cb(this);
 		windows.kp[kp_id] = null;
 	};
+	return win;
 };
 Windows.prototype.newYesNo = function (x, y, cb) {
 	return this.newSelector(x, y, ['Yes', 'No'], cb);
@@ -193,6 +236,7 @@ Windows.prototype.newSelector = function (x, y, opts, cb) {
 		windows.kp[kp_id] = null;
 		windows.removeWindow(this.id);
 	};
+	return win;
 };
 
 

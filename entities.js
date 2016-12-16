@@ -94,17 +94,8 @@ NPC.prototype.move = function (x, y) {
 NPC.prototype.check = function () {
 	if (this.flags['talking'] !== true) {
 		var strs = this.get_text();
-		var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
+		var win = windows.newSimple(strs, width/2, height*0.8, width*0.9, height/2*0.60, function (){self.flags['talking'] = false;});
 		this.flags['talking'] = true;
 	}
 };
@@ -128,12 +119,21 @@ NPC.prototype.get_text = function () {
 	var ret_text;
 	var ret_prop;
 	var self = this;
+	if (this.flags['override_text']) return [this.flags['override_text']];
 	try {
 		for (var prop in this.data.text) {
 			if (prop == 'default' || this.flags['text_state'] === prop) {
 				ret_text = this.data.text[prop][index];
 				ret_prop = prop;
 			}
+			if (prop.slice(0,1)=='#' && game.flags[prop.slice(1)] === true) {
+				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
+			}
+		}
+		if(index >= this.data.text[ret_prop].length) {
+			this.txt_ord = 0;
+			return this.get_text();
 		}
 		var objCallback = function (obj) {
 			return function () {
@@ -154,10 +154,11 @@ NPC.prototype.get_text = function () {
 		}
 		if(this.flags['repeatln']!==true) {
 			this.txt_ord++;
-			if(index == this.data.text[ret_prop].length-1)this.txt_ord = 0;
+			if(index >= this.data.text[ret_prop].length-1)this.txt_ord = 0;
 		}
 		return ret_text || ['Default text.'];
 	}catch (err) {
+		console.log(err);
 		return ['Default text.'];
 	}
 };
