@@ -21,6 +21,8 @@ var Player = function () {
 	this.color_s = 10;
 	this.color_b = 100;
 
+	this.party_members = [];
+
 	this.flags = {
 		'noclip' : false
 	};
@@ -78,6 +80,29 @@ Player.prototype.update = function () {
 			if (e.check) {
 				e.do_check(this);
 			}
+		}
+	}
+	for (var i = this.party_members.length - 1; i >= 0; i--) {
+		var mem = this.party_members[i];
+		var dis = dist(this.x,this.y,mem.x,mem.y);
+		var fd = mem.flags['follow_dist'];
+		if(dis > fd+random(50,150)) { // outside fd
+			if (mem.flags['move_path']) {
+				var dest = mem.flags['move_path'][mem.flags['move_path'].length-1];
+				dis = dist(this.x,this.y,dest[0],dest[1]);
+				if(dis > fd) {
+					mem.flags['move_path'].push([this.x,this.y]);
+				}
+			}else {
+				mem.flags['do_move'] = true;
+				mem.flags['move_cur'] = 0;
+				mem.flags['move_path'] = [[this.x,this.y]];
+				mem.flags['move_cb'] = function () {};
+			}
+		}else if(dis < fd) { // inside fd
+			mem.flags['do_move'] = false;
+			mem.flags['move_path'] = null;
+			mem.flags['move_cb'] = null;
 		}
 	}
 };

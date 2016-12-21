@@ -6,10 +6,10 @@
 		]
 	},
 	"entities" : [
-		{"type":"Tree", "pos":[43,-89]},
+		{"type":"Tree", "pos":[43,-89], "size":1.5},
 		{"type":"Tree", "pos":[-239,-204]},
 		{"type":"Tree", "pos":[277,-203]},
-		{"type":"Tree", "pos":[284,233]},
+		{"type":"Tree", "pos":[275,233]},
 		{"type":"Tree", "pos":[-220,223]},
 		{"type":"Tree", "pos":[501,-16]},
 		{"type":"Tree", "pos":[857,41]},
@@ -48,8 +48,11 @@
 				"help" : [
 					["G-Go k-k-kill them q-quickly"],
 					["H-H-Hurry I'm too y-young to d-d-d..."],
-					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "#promice":true}}],
+					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "#promice":true}, "movepath":{"path":[[79,154],[43,271],[124,331],[333,333]], "spd":-1.5, "cb":{"setflag":{"text_state":"donemove","#promice":false}}}}],
 					["S-s-ssseriously... save me...", "Please"]
+				],
+				"donemove" : [
+					["well guess im done moving...."]
 				]
 			}
 		},
@@ -57,16 +60,30 @@
 			"name" : "Aurthur",
 			"surname" : "Butthole",
 			"age" : 15,
-			"x" : 547,
+			"x" : 557,
 			"y" : 291,
 			"gender" : "boy",
 			"flags" : {},
 			"text" : {
 				"default" : [
-					["Hi, how's it goin'\nI like the way you walk","Wanna be friends?",{"yesNo":{"case":[["Really!?\nYou will?",{"setflag":{"text_state":"follow"}}],["oh...\n\n...okay"]],"default":1}}]
+					["Hi, how's it goin'\nI like the way you walk","Wanna be friends?",{"yesNo":{"case":[["Really!?\nYou will?",{"joinparty":{}, "setflag":{"text_state":"follow"}}],["oh...\n\n...okay"]],"default":1}}]
 				],
-				"follow" : [["If you talk to me when I'm done then I'll follow you around", "For now, just leave me be"]],
+				"follow" : [["If you talk to me when I'm done then I will join you on your adventure..."]],
 				"#promice" : [["You should help her?\nEh..?"]]
+			}
+		},
+		{
+			"name" : "Yessica",
+			"surname" : "Jessivich",
+			"age" : 10,
+			"x" : 517,
+			"y" : 291,
+			"gender" : "girl",
+			"flags" : {},
+			"attribs" : {"speed":3},
+			"text" : {
+				"default" : [["Im coming with you!", {"joinparty":{},"setflag":{"text_state":"follow"}}]],
+				"follow" : [["I like to follow you <3"]]
 			}
 		}
 	]

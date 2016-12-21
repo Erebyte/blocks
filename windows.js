@@ -69,6 +69,27 @@ var Windows = function () {
 				// console.log(k, i);
 				// console.log(def, case_);
 			});
+		},
+		movepath:function(obj, win, args) {
+			obj.flags['do_move'] = true;
+			obj.flags['move_path'] = args.path;
+			if(!obj.flags['spd_buf']) obj.flags['spd_buf']=0;
+			if(args.spd) obj.flags['spd_buf'] += args.spd;
+			obj.flags['move_cb'] = function () {
+				if(args.cb) {
+					for (var func in args.cb) {
+						if (typeof windows.flagFunctions[func] == 'function') {
+							windows.flagFunctions[func](obj, win, args.cb[func]);
+						}
+					}
+				}
+				if (args.spd) obj.flags['spd_buf'] -= args.spd;
+			};
+		},
+		joinparty:function (obj, win, args) {
+			player.party_members.push(obj);
+			obj.flags['follow_dist'] = random(50,70);
+			windows.newSimple([obj.npc_name+' has joined your party']);
 		}
 	};
 };
@@ -236,8 +257,8 @@ Windows.prototype.newSelector = function (x, y, opts, cb) {
 		}
 
 	}, win);
-	windows.windows[win].close = function (p) {
-		if(cb)cb(this.flags['line_select'],p);
+	windows.windows[win].close = function (k) {
+		if(cb)cb(this.flags['line_select'],k);
 		windows.kp[kp_id] = null;
 		windows.removeWindow(this.id);
 	};

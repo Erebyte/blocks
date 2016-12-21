@@ -34,7 +34,10 @@ var NPC = function (data) {
 
 	this.txt_ord = 0;
 
-	this.flags = data.flags || {}; // should 'merge' not 'or'
+	this.flags = Object.assign({}, data.flags);
+	this.attribs = Object.assign({
+			'speed':2
+		}, this.attribs);
 
 	var h = data.hue || random(360);
 	var s = 0;
@@ -62,6 +65,8 @@ var NPC = function (data) {
 	this.color_h = h;
 	this.color_s = s;
 	this.color_b = b;
+
+	this.debug_data = [];
 };
 NPC.prototype = Object.create(GameEntity.prototype);
 
@@ -72,18 +77,46 @@ NPC.prototype.draw = function () {
 	rect(this.x-this.w/2, this.y-this.h, this.w, this.h);
 	colorMode(RGB, 255);
 };
+NPC.prototype.draw_debug = function () {
+	if(!this.flags['do_move']) return;
+	push();
+	translate(width/2-camera.x, height/2-camera.y);
+	noFill();
+	stroke(0,0,255);
+	beginShape();
+	vertex(this.x, this.y);
+	// console.log(this);
+	for (var i = this.flags['move_cur']; i < this.flags['move_path'].length; i++) {
+		v = this.flags['move_path'][i];
+		vertex(v[0],v[1]);
+	}
+	endShape();
+	pop();
+};
 NPC.prototype.update = function () {
-	if (keyIsDown(87)) {//w
-		this.move(0, -1);
-	}
-	if (keyIsDown(83)){//s
-		this.move(0, 1);
-	}
-	if (keyIsDown(65)){//a
-		this.move(-1, 0);
-	}
-	if (keyIsDown(68)){//d
-		this.move(1, 0);
+	if(this.flags['do_move'] && this.flags['move_path'] && !this.flags['talking']) {
+		if(!this.flags['move_cur'])this.flags['move_cur'] = 0;
+		// var vec = createVector(player.x-this.x, player.y-this.y);
+		// vec.normalize();
+		// this.move(vec.x, vec.y);
+		var path = this.flags['move_path'];
+		var next = path[this.flags['move_cur']];
+		var min_dist = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
+		if(dist(this.x, this.y, next[0], next[1]) < min_dist) next = path[++this.flags['move_cur']];
+
+		if (next) {
+			var vec = createVector(next[0]-this.x, next[1]-this.y);
+			vec.normalize();
+			this.move(vec.x,vec.y);
+			
+			game.debug_cb.push(this);
+		}else {
+			this.flags['do_move'] = false;
+			this.flags['move_path'] = null;
+			this.flags['move_cur'] = null;
+			this.flags['move_cb']();
+			this.flags['move_cb'] = null;
+		}
 	}
 };
 NPC.prototype.move = function (x, y) {
@@ -178,7 +211,7 @@ var Tree = function (pos, w, size) {
 		x:pos.x,
 		y:pos.y
 	});
-	size = size || 1;
+	this.size = size = size || random(1,1.5);
 	this.w = w || random(30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
@@ -266,7 +299,7 @@ Tree.prototype._gen_branch = function (tri, angle, size) {
 		this._gen_branch(new_tri, angle+-1*(Math.random()*40+20), size);
 	}
 	if (size < 15) {
-		this.points.push([tri[2]+p1x,tri[3]-p1y,Math.random()*10+5,45,Math.random()*40+60,Math.random()*40+30]);
+		this.points.push([tri[2]+p1x,tri[3]-p1y,Math.random()*10+5,45,Math.random()*40+60,Math.random()*40+30]); // x,y,s, h,s,b
 	}
 };
 Tree.prototype.generate = function () {
@@ -281,8 +314,8 @@ Tree.prototype.generate = function () {
 	this.vertices.push([p1x,p1y,p2x,p2y,p3x,p3y]);
 	this.vertices.push([p1x,p1y,this.x,this.y+10,p3x,p3y]);
 
-	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20);
-	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20));
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20, this.size*20);
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20), this.size*20);
 	// console.log(this.vertices);
 };
 

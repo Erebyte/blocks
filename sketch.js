@@ -112,7 +112,10 @@ function draw () {
 		// blit all entities
 		for (var i = entities.length - 1; i >= 0; i--) {
 			var e = entities[i];
-			if(collideRectCircle(camera.x-width/2,camera.y-height/2,width,height,e.x,e.y,300))blit(e,e.y);
+			if(collideRectCircle(camera.x-width/2,camera.y-height/2,width,height,e.x,e.y,300)){
+				e.update();
+				blit(e,e.y);
+			}else if (player.party_members.indexOf(e) != -1) e.update();
 			// if(collidePointPoint(player.x,player.y,e.x,e.y,200))blit(e,e.y);
 			// blit(e,e.y);
 		}

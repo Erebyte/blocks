@@ -140,6 +140,7 @@ GameEntity.prototype.animate = function () {
 	}
 };
 GameEntity.prototype.collide = function () {return false;};
+GameEntity.prototype.update = function () {return false;};
 
 /* // -=-=- Main Game Object -=-=- // */
 // 
@@ -148,6 +149,7 @@ GameEntity.prototype.collide = function () {return false;};
 var Game = function () {
 	this.gamestate = 'logo';
 	this.debug_mode = false;
+	this.debug_cb = [];
 	this._logos = new Logos();
 	this._fps_hystory = [];
 	
@@ -191,6 +193,11 @@ Game.prototype.draw_debug = function () {
 	endShape();
 	//
 	pop();
+
+	for (var i = this.debug_cb.length - 1; i >= 0; i--) {
+		this.debug_cb[i].draw_debug();
+	}
+	this.debug_cb = [];
 };
 Game.prototype.setGamestate = function (state) {
 	//animation
