@@ -7,7 +7,7 @@
 */
 
 // Globals and Constants //
-var VERSION = 'pra-alpha:0.4.5';
+var VERSION = 'pra-alpha: v0.4.6'; // version.release.patch
 var game;
 var player;
 var windows;
