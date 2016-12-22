@@ -187,9 +187,11 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 	return id;
 };
 Windows.prototype.getFlag = function (id, flag) {
+	if(!windows.windows[id])return;
 	return this.windows[id].flags[flag];
 };
 Windows.prototype.setFlag = function (id, flag, value) {
+	if(!windows.windows[id])return;
 	this.windows[id].flags[flag] = value;
 };
 Windows.prototype.newKeyPress = function (f, w) {
@@ -239,10 +241,15 @@ Windows.prototype.newSimple = function (str, x, y, w, h, cb) {
 Windows.prototype.newYesNo = function (x, y, cb) {
 	return this.newSelector(x, y, ['Yes', 'No'], cb);
 };
-Windows.prototype.newSelector = function (x, y, opts, cb) {
+Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
+	if(do_close==null)do_close=true;
 	var opt_l = opts.length;
+	var longest = 0;
+	for (var i = opts.length - 1; i >= 0; i--) {
+		if(opts[i].length>longest)longest=opts[i].length;
+	}
 	var strs = [opts.join('\n')];
-	var win = windows.newWindow(strs, x, y, 70, opt_l*30+20);
+	var win = windows.newWindow(strs, x, y, longest*15+20, opt_l*40+20);
 	windows.setFlag(win,'line_select',0);
 	var kp_id = windows.newKeyPress(function (key) {
 		if (key == 'T')	windows.windows[win].close();
@@ -259,6 +266,9 @@ Windows.prototype.newSelector = function (x, y, opts, cb) {
 	}, win);
 	windows.windows[win].close = function (k) {
 		if(cb)cb(this.flags['line_select'],k);
+		if(do_close)this.close_();
+	};
+	windows.windows[win].close_ = function () {
 		windows.kp[kp_id] = null;
 		windows.removeWindow(this.id);
 	};
@@ -273,21 +283,64 @@ var GameMenu = function () {
 
 };
 GameMenu.prototype.open = function () {
-	console.log('open menu');
-	var strs = ['This is the menu\nIt is currently empty\n\n"1","2" for debug'];
-	var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'E') {
-			windows.windows[win].close();
-		}
-	});
-	windows.windows[win].unload = function () {
-		windows.kp[kp_id] = null;
-	};
+	// console.log('open menu');
+	var strs = ['This is the menu,\nit is currently empty.'];
+	var win = windows.newWindow(strs, width/2, height*0.15, width*0.9, height*0.2);
+	// var kp_id = windows.newKeyPress(function (key) {
+	// 	if (key == 'E') {
+	// 		windows.windows[win].close();
+	// 	}
+	// });
+	// windows.windows[win].unload = function () {
+	// 	windows.kp[kp_id] = null;
+	// };
 
-	windows.newYesNo(width/2, height/2, function (i,k) {
-		console.log(k, i);
-	});
+	var opts = ['Party','Items','Options','Exit'];
+	var sel = windows.newSelector(width*0.15,height/2,opts,function (i,k) {
+		if(k)i=opts.length-1;
+		var sel_kp = windows.windows[sel].kp_id;
+		var kp = windows.kp[sel_kp];
+		windows.kp[sel_kp] = null;
+		switch (i) {
+			case 0: //party
+				windows.newSimple(['temp party win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
+					windows.newKeyPress(kp,sel);
+				});
+				break;
+			case 1: //items
+				windows.newSimple(['temp items win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
+					windows.newKeyPress(kp,sel);
+				});
+				break;
+			case 2: //options
+				var opt_opts = ["Debug","Credits","Exit"];
+				windows.newSelector(width*0.4,height/2,opt_opts,function(oi,ok){
+					if(ok)oi=opt_opts.length-1;
+					switch (oi) {
+						case 0: //debug options
+							var str = 'To toggle debug press:\n  "1" for general\n  "2" for terrain';
+							windows.newSimple([str],width*0.6,height*0.6, width*0.7, height*0.6, function(){
+								windows.newKeyPress(kp,sel);
+							});
+							break;
+						case 1: //credits
+							windows.newSimple(['tmp credits win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
+								windows.newKeyPress(kp,sel);
+							});
+							break;
+						case 2: //exit
+							windows.newKeyPress(kp,sel);
+							break;
+					}
+				});
+				break;
+			case 3: //exit
+				windows.windows[win].close();
+				windows.windows[sel].close_();
+				break;
+		}
+		// console.log(opts[i]);
+	}, false);
 };
 
 // if (this.flags['talking'] !== true) {

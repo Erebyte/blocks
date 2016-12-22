@@ -170,8 +170,7 @@ Terrain.prototype.toggleDebug = function () {
 };
 Terrain.prototype.draw = function (xoff, yoff) {
 	push();
-	translate(-xoff, -yoff);
-	translate(width/2, height/2);
+	translate(width/2-camera.x, height/2-camera.y);
 
 	fill(30);
 	for (pi=0;pi<this.poly.length;pi++){

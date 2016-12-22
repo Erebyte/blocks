@@ -48,7 +48,7 @@
 				"help" : [
 					["G-Go k-k-kill them q-quickly"],
 					["H-H-Hurry I'm too y-young to d-d-d..."],
-					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "#promice":true}, "movepath":{"path":[[79,154],[43,271],[124,331],[333,333]], "spd":-1.5, "cb":{"setflag":{"text_state":"donemove","#promice":false}}}}],
+					["Please I'll do whatever you want if you save me", {"setflag":{"repeatln":true, "#promice":true}, "movepath":{"path":[[79,154],[43,271],[124,331],[333,333]], "spd":2, "cb":{"setflag":{"text_state":"donemove","#promice":false}}}}],
 					["S-s-ssseriously... save me...", "Please"]
 				],
 				"donemove" : [
