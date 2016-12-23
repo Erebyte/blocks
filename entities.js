@@ -197,6 +197,79 @@ NPC.prototype.get_text = function () {
 };
 
 
+
+// -=-=-=-=- Rat -=-=-=- 
+//
+//
+var Rat = function (pos, size) {
+	GameEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+
+	this.size = size || random(0.75,1.5);
+	this.tail_len = floor(random(5,15)*this.size);
+
+	this.attribs = Object.assign({
+			'speed':5
+		}, this.attribs);
+
+	this.path_history = [];
+	this.facing_dir = createVector(1,0);
+
+};
+Rat.prototype = Object.create(GameEntity.prototype);
+
+// -=- functions -=- //
+Rat.prototype.move = function (x, y) {
+	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
+	this.x += x*spd;
+	this.y += y*spd;
+	this.path_history.push([this.x,this.y]);
+	this.facing_dir = createVector(x,y);
+	this.facing_dir.normalize();
+	if(this.path_history.length > this.tail_len) {
+		this.path_history = this.path_history.slice(1);
+	}
+};
+Rat.prototype.draw = function () {
+	var w = this.size * 5;
+	var h = this.size * 15;
+	var s = this.size * 7;
+	push();
+	push();
+	translate(this.x,this.y);
+	rotate(this.facing_dir.heading()+PI/2);
+	noStroke();
+	fill(41, 17, 66);
+	ellipse(-w/2,-h*0.9,s,s);
+	ellipse(w/2,-h*0.9,s,s);
+	stroke(0);
+	fill(103, 25, 103);
+	triangle(-w,0,0,-h,w,0);
+	pop();
+	noFill();
+	beginShape();
+	for (var i = this.path_history.length - 1; i >= 0; i-=5) {
+		var v = this.path_history[i];
+		vertex(v[0],v[1]);
+	}
+	endShape();
+	pop();
+};
+Rat.prototype.update = function () {
+	if(!this.flags['_rot_']) this.flags['_rot_']=random(0,PI);
+	this.flags['_rot_']+=0.1;
+	if (random()<0.1)this.flags['_rot_']+=random(-1,1);
+	var vec = p5.Vector.fromAngle(this.flags['_rot_']);
+	// var vec = createVector(player.x-this.x, player.y-this.y);
+	// vec.normalize();
+	this.move(vec.x, vec.y);
+
+};
+
+
+
 // -=-=-=-=- TREE -=-=-=- //
 //
 // Args:

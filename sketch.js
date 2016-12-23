@@ -34,6 +34,8 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
+	entities.push(new Rat(createVector(200,500)));
+
 }
 
 // -=-=- Draw -=- Main Game Loop -=-=- //

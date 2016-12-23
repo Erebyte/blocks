@@ -286,14 +286,6 @@ GameMenu.prototype.open = function () {
 	// console.log('open menu');
 	var strs = ['This is the menu,\nit is currently empty.'];
 	var win = windows.newWindow(strs, width/2, height*0.15, width*0.9, height*0.2);
-	// var kp_id = windows.newKeyPress(function (key) {
-	// 	if (key == 'E') {
-	// 		windows.windows[win].close();
-	// 	}
-	// });
-	// windows.windows[win].unload = function () {
-	// 	windows.kp[kp_id] = null;
-	// };
 
 	var opts = ['Party','Items','Options','Exit'];
 	var sel = windows.newSelector(width*0.15,height/2,opts,function (i,k) {
