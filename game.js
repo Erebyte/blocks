@@ -116,6 +116,8 @@ GameObject.prototype.setFlag = function (flag, value) {
 //
 var GameEntity = function (entity_data) {
 	GameObject.call(this, entity_data);
+
+	this.AI = new AI(this);
 	
 	this.data = entity_data || {};
 	this.x = entity_data.x || 0;
@@ -141,6 +143,80 @@ GameEntity.prototype.animate = function () {
 };
 GameEntity.prototype.collide = function () {return false;};
 GameEntity.prototype.update = function () {return false;};
+
+
+// -=- AI -=- //
+//
+//
+var AI = function (parent) {
+	this.parent = parent;
+};
+AI.prototype.getPathDestination = function () {
+	if (this.parent.flags['do_move']) {
+		return this.parent.flags['move_path'][this.parent.flags['move_path'].length-1];
+	}else {
+		return [this.parent.x,this.parent.y];
+	}
+};
+AI.prototype.pathPush = function (value, cb) {
+	if (this.parent.flags['move_path']) {
+		this.parent.flags['move_path'].push(value);
+	}else {
+		this.parent.flags['do_move'] = true;
+		this.parent.flags['move_cur'] = 0;
+		this.parent.flags['move_path'] = [value];
+		this.parent.flags['move_cb'] = cb || function () {};
+	}
+};
+AI.prototype.clearPath = function () {
+	this.parent.flags['do_move'] = false;
+	this.parent.flags['move_path'] = null;
+	this.parent.flags['move_cur'] = null;
+	this.parent.flags['move_cb'] = null;
+};
+AI.prototype.movePathVector = function () {
+	if(this.parent.flags['do_move'] && this.parent.flags['move_path']) {
+		if(!this.parent.flags['move_cur'])this.parent.flags['move_cur'] = 0;
+		var path = this.parent.flags['move_path'];
+		var next = path[this.parent.flags['move_cur']];
+		var min_dist = this.parent.attribs['speed'] || 1 + (this.parent.flags['spd_buf'] || 0);
+		if(dist(this.parent.x, this.parent.y, next[0], next[1]) < min_dist) next = path[++this.parent.flags['move_cur']];
+
+		if (next) {
+			var vec = createVector(next[0]-this.parent.x, next[1]-this.parent.y);
+			vec.normalize();
+
+			// debug code
+			var self = this;
+			game.debug_cb.push({draw_debug:function () {
+				if(!self.parent.flags['do_move']) return;
+				push();
+				translate(width/2-camera.x, height/2-camera.y);
+				noFill();
+				stroke(0,0,255);
+				beginShape();
+				vertex(self.parent.x, self.parent.y);
+				// console.log(self.parent);
+				for (var i = self.parent.flags['move_cur']; i < self.parent.flags['move_path'].length; i++) {
+					v = self.parent.flags['move_path'][i];
+					vertex(v[0],v[1]);
+				}
+				endShape();
+				pop();
+			}});
+
+			return vec;
+		}else {
+			this.parent.flags['do_move'] = false;
+			this.parent.flags['move_path'] = null;
+			this.parent.flags['move_cur'] = null;
+			this.parent.flags['move_cb']();
+			this.parent.flags['move_cb'] = null;
+		}
+	}
+};
+
+
 
 /* // -=-=- Main Game Object -=-=- // */
 // 

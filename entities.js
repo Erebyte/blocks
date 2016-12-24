@@ -77,47 +77,9 @@ NPC.prototype.draw = function () {
 	rect(this.x-this.w/2, this.y-this.h, this.w, this.h);
 	colorMode(RGB, 255);
 };
-NPC.prototype.draw_debug = function () {
-	if(!this.flags['do_move']) return;
-	push();
-	translate(width/2-camera.x, height/2-camera.y);
-	noFill();
-	stroke(0,0,255);
-	beginShape();
-	vertex(this.x, this.y);
-	// console.log(this);
-	for (var i = this.flags['move_cur']; i < this.flags['move_path'].length; i++) {
-		v = this.flags['move_path'][i];
-		vertex(v[0],v[1]);
-	}
-	endShape();
-	pop();
-};
 NPC.prototype.update = function () {
-	if(this.flags['do_move'] && this.flags['move_path'] && !this.flags['talking']) {
-		if(!this.flags['move_cur'])this.flags['move_cur'] = 0;
-		// var vec = createVector(player.x-this.x, player.y-this.y);
-		// vec.normalize();
-		// this.move(vec.x, vec.y);
-		var path = this.flags['move_path'];
-		var next = path[this.flags['move_cur']];
-		var min_dist = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
-		if(dist(this.x, this.y, next[0], next[1]) < min_dist) next = path[++this.flags['move_cur']];
-
-		if (next) {
-			var vec = createVector(next[0]-this.x, next[1]-this.y);
-			vec.normalize();
-			this.move(vec.x,vec.y);
-			
-			game.debug_cb.push(this);
-		}else {
-			this.flags['do_move'] = false;
-			this.flags['move_path'] = null;
-			this.flags['move_cur'] = null;
-			this.flags['move_cb']();
-			this.flags['move_cb'] = null;
-		}
-	}
+	var vec = this.AI.movePathVector();
+	if(vec && !this.flags['talking']) this.move(vec.x,vec.y);
 };
 NPC.prototype.move = function (x, y) {
 	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
@@ -211,11 +173,14 @@ var Rat = function (pos, size) {
 	this.tail_len = floor(random(5,15)*this.size);
 
 	this.attribs = Object.assign({
-			'speed':5
+			'speed':random(4,6)*(1/this.size)
 		}, this.attribs);
 
 	this.path_history = [];
 	this.facing_dir = createVector(1,0);
+
+	this.rotation_f = 1;
+	this.circleing_r = random(100,200);
 
 };
 Rat.prototype = Object.create(GameEntity.prototype);
@@ -225,12 +190,14 @@ Rat.prototype.move = function (x, y) {
 	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
 	this.x += x*spd;
 	this.y += y*spd;
+
+	//draw stuff
 	this.path_history.push([this.x,this.y]);
 	this.facing_dir = createVector(x,y);
 	this.facing_dir.normalize();
 	if(this.path_history.length > this.tail_len) {
 		this.path_history = this.path_history.slice(1);
-	}
+	}// end
 };
 Rat.prototype.draw = function () {
 	var w = this.size * 5;
@@ -258,13 +225,27 @@ Rat.prototype.draw = function () {
 	pop();
 };
 Rat.prototype.update = function () {
-	if(!this.flags['_rot_']) this.flags['_rot_']=random(0,PI);
-	this.flags['_rot_']+=0.1;
-	if (random()<0.1)this.flags['_rot_']+=random(-1,1);
-	var vec = p5.Vector.fromAngle(this.flags['_rot_']);
-	// var vec = createVector(player.x-this.x, player.y-this.y);
-	// vec.normalize();
-	this.move(vec.x, vec.y);
+	var dest = this.AI.getPathDestination();
+	if(dist(dest[0],dest[1],player.x,player.y) > 100) {
+		this.AI.pathPush([player.x, player.y]);
+	}else if (dist(this.x,this.y,player.x,player.y) < this.circleing_r+random(-20,20)){
+		var vec = this.AI.movePathVector();
+		if (vec && dist(this.x,this.y,player.x,player.y) < 30){
+			this.AI.clearPath();
+			if(random()<0.25)this.rotation_f*=-1;
+		}
+		if (vec) {
+			this.move(vec.x, vec.y);
+		}else {
+			var d = createVector(player.x-this.x,player.y-this.y);
+			d.rotate(radians(95*this.rotation_f));
+			d.normalize();
+			this.move(d.x,d.y);
+		}
+	}else {
+		var vec = this.AI.movePathVector();
+		if(vec)this.move(vec.x, vec.y);
+	}
 
 };
 
