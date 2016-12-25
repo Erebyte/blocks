@@ -31,6 +31,8 @@ var Player = function () {
 		"speed" : 3
 	};
 	this.path = [];
+
+	this._debug = false;
 };
 
 // -=-  Player Functions -=- //
@@ -43,14 +45,65 @@ Player.prototype.draw = function () {
 		fill(255);
 		ellipse(this.x-this.w/2, this.y-this.h, this.w, this.w);
 	}
+	if (this.flags['do_grapple']) {
+		var pos = this.flags['grapple_pos'];
+		fill(200);
+		ellipse(pos.x,pos.y-pos.z,5,5);
+	}
 };
 Player.prototype.keyPressed = function (key) {
 	if (key == 'T' && this.flags['check']) {
 		this.flags['checking'].check();
 	}
 };
+Player.prototype.mousePressed = function (mx,my) {
+	this.flags['do_grapple'] = true;
+	this.flags['grapple_click_start'] = createVector(this.x,this.y);
+	this.flags['grapple_click_dest'] = createVector(mx,my);
+	this.flags['grapple_pos'] = createVector(this.x,this.y,0);
+	var self = this;
+	var grapple_ud = true;
+	var gr_h = 3;
+	var vec = p5.Vector.sub(this.flags['grapple_click_dest'],this.flags['grapple_click_start']);
+	var gravity = createVector(0,0,gr_h*-0.1);
+	var friction = vec.copy();
+	friction.setMag(-2);
+	vec.setMag(10);
+	vec.z = gr_h;
+	this.flags['grapple_update'] = function () {
+		if(p5.Vector.angleBetween(vec,friction)<=1 && vec.z<=0) grapple_ud=false;
+		if(grapple_ud) {
+			self.flags['grapple_pos'].add(vec);
+			vec.add(gravity);
+			if(self.flags['grapple_pos'].z<=0 ) {
+				self.flags['grapple_pos'].z=0;
+				vec.add(friction);
+			}
+		}
+	};
+};
+Player.prototype.draw_debug = function () {
+	if(this.flags['do_grapple']) {
+		push();
+		translate(width/2-camera.x, height/2-camera.y);
+		var start = this.flags['grapple_click_start'];
+		var dest = this.flags['grapple_click_dest'];
+		var pos = this.flags['grapple_pos'];
+		stroke(255,0,0);
+		line(start.x,start.y,dest.x,dest.y);
+		line(pos.x,pos.y,pos.x,pos.y-pos.z);
+		stroke(0,0,255);
+		line(this.x,this.y,pos.x,pos.y-pos.z);
+		pop();
+	}
+};
+Player.prototype.toggleDebug = function () {
+	this._debug = !this._debug;
+};
 Player.prototype.update = function () {
 	if(!windows.open_window) {
+		if(this.flags['grapple_update'])this.flags['grapple_update']();
+
 		var mx = 0;
 		var my = 0;
 		if (keyIsDown(87)) {//w

@@ -179,8 +179,8 @@ var Rat = function (pos, size) {
 	this.path_history = [];
 	this.facing_dir = createVector(1,0);
 
-	this.rotation_f = 1;
-	this.circleing_r = random(100,200);
+	this.rotation_direction = 1; //-1 || 1
+	this.circleing_radius = random(100,200);
 
 };
 Rat.prototype = Object.create(GameEntity.prototype);
@@ -228,17 +228,17 @@ Rat.prototype.update = function () {
 	var dest = this.AI.getPathDestination();
 	if(dist(dest[0],dest[1],player.x,player.y) > 100) {
 		this.AI.pathPush([player.x, player.y]);
-	}else if (dist(this.x,this.y,player.x,player.y) < this.circleing_r+random(-20,20)){
+	}else if (dist(this.x,this.y,player.x,player.y) < this.circleing_radius+random(-20,20)){
 		var vec = this.AI.movePathVector();
 		if (vec && dist(this.x,this.y,player.x,player.y) < 30){
 			this.AI.clearPath();
-			if(random()<0.25)this.rotation_f*=-1;
+			if(random()<0.25)this.rotation_direction*=-1;
 		}
 		if (vec) {
 			this.move(vec.x, vec.y);
 		}else {
 			var d = createVector(player.x-this.x,player.y-this.y);
-			d.rotate(radians(95*this.rotation_f));
+			d.rotate(radians(95*this.rotation_direction));
 			d.normalize();
 			this.move(d.x,d.y);
 		}

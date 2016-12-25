@@ -34,18 +34,18 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Rat(createVector(200,500)));
-	entities.push(new Rat(createVector(10,500)));
-	entities.push(new Rat(createVector(20,50)));
-	entities.push(new Rat(createVector(50,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50),2));
-	entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(200,500)));
+	// entities.push(new Rat(createVector(10,500)));
+	// entities.push(new Rat(createVector(20,50)));
+	// entities.push(new Rat(createVector(50,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(100,50),2));
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));
@@ -53,6 +53,7 @@ function setup () {
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),5));
 
 }
 
@@ -146,6 +147,7 @@ function draw () {
 		windows.draw();
 		
 		if(terrain._debug)terrain.draw_debug();
+		if(player._debug)player.draw_debug();
 		if(game.debug_mode)game.draw_debug();
 	}
 }
@@ -206,12 +208,17 @@ function keyPressed() {
 		}
 		if(key == '1') game.toggleDebug();
 		if(key == '2') terrain.toggleDebug();
+		if(key == '3') player.toggleDebug();
 		if(key == 'E' && !windows.open_window) windows.menu.open();
 	}
 	if(game.debug_mode)console.log(keyCode + " : " + key);
 }
 
 function mousePressed() { // For debug use !?!?! //
+	if(game.gamestate == 'game') {
+		player.mousePressed(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	}
+
 	// console.log('mouse:', mouseX, mouseY);
 	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
