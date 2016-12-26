@@ -28,7 +28,8 @@ var Player = function () {
 	};
 	this.attribs = {
 		"health" : 20,
-		"speed" : 3
+		"speed" : 3,
+		"grapple_len" : 200
 	};
 	this.path = [];
 
@@ -48,6 +49,7 @@ Player.prototype.draw = function () {
 	if (this.flags['do_grapple']) {
 		var pos = this.flags['grapple_pos'];
 		fill(200);
+		line(pos.x,pos.y-pos.z,this.x,this.y-10);
 		ellipse(pos.x,pos.y-pos.z,5,5);
 	}
 };
@@ -56,23 +58,68 @@ Player.prototype.keyPressed = function (key) {
 		this.flags['checking'].check();
 	}
 };
+Player.prototype.mouseWheel = function (delta) {
+	console.log(delta);
+	if (this.flags['do_grapple']) {
+		if (delta >= 300) {
+			var self = this;
+			var pos;
+			var gr_h = 10;
+			var c = 0;
+			this.flags['grapple_update'] = function () {
+				pos = self.flags['grapple_pos'];
+				vec = createVector(self.x-pos.x,self.y-pos.y,0);
+				// vec = createVector(0,0,0);
+				vec.limit(20);
+				vec.z = gr_h-(c*(c/3));
+				c++;
+				self.flags['grapple_pos'].add(vec);
+				if(self.flags['grapple_pos'].z<=0){
+					self.flags['grapple_pos'].z=0;
+				}
+				if(dist(self.x,self.y,pos.x,pos.y)<=10){
+					self.flags['do_grapple'] = false;
+				}
+			};
+
+		}else {
+
+		}
+	}
+};
 Player.prototype.mousePressed = function (mx,my) {
-	this.flags['do_grapple'] = true;
-	this.flags['grapple_click_start'] = createVector(this.x,this.y);
+	var zoff = 0;
+	if (this.flags['do_grapple']===true) {
+		var p = this.flags['grapple_pos'];
+		zoff = p.z*-0.3;
+		this.flags['grapple_click_start'] = createVector(p.x,p.y);
+		this.flags['grapple_pos'] = createVector(p.x,p.y,p.z);
+	}else {
+		this.flags['do_grapple'] = true;
+		this.flags['grapple_click_start'] = createVector(this.x,this.y);
+		this.flags['grapple_pos'] = createVector(this.x,this.y,0);
+	}
 	this.flags['grapple_click_dest'] = createVector(mx,my);
-	this.flags['grapple_pos'] = createVector(this.x,this.y,0);
 	var self = this;
 	var grapple_ud = true;
 	var gr_h = 3;
 	var vec = p5.Vector.sub(this.flags['grapple_click_dest'],this.flags['grapple_click_start']);
-	var gravity = createVector(0,0,gr_h*-0.1);
+	var gravity = createVector(0,0,-0.3);
 	var friction = vec.copy();
 	friction.setMag(-2);
 	vec.setMag(10);
-	vec.z = gr_h;
+	vec.z = gr_h+zoff;
 	this.flags['grapple_update'] = function () {
-		if(p5.Vector.angleBetween(vec,friction)<=1 && vec.z<=0) grapple_ud=false;
+		if(p5.Vector.angleBetween(vec,friction)<=1 && self.flags['grapple_pos'].z<=0) grapple_ud=false;
 		if(grapple_ud) {
+			var g_vec = p5.Vector.sub(self.flags['grapple_pos'],createVector(self.x,self.y));
+			var g_len = g_vec.mag();
+			g_vec.normalize();
+			if(g_len>self.attribs['grapple_len']){
+				var s = vec.mag()*0.25;
+				vec.x=-g_vec.x*s;
+				vec.y=-g_vec.y*s;
+			}
 			self.flags['grapple_pos'].add(vec);
 			vec.add(gravity);
 			if(self.flags['grapple_pos'].z<=0 ) {
@@ -89,7 +136,9 @@ Player.prototype.draw_debug = function () {
 		var start = this.flags['grapple_click_start'];
 		var dest = this.flags['grapple_click_dest'];
 		var pos = this.flags['grapple_pos'];
+		noFill();
 		stroke(255,0,0);
+		ellipse(this.x,this.y,this.attribs['grapple_len']*2,this.attribs['grapple_len']*2);
 		line(start.x,start.y,dest.x,dest.y);
 		line(pos.x,pos.y,pos.x,pos.y-pos.z);
 		stroke(0,0,255);

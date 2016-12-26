@@ -222,6 +222,11 @@ function mousePressed() { // For debug use !?!?! //
 	// console.log('mouse:', mouseX, mouseY);
 	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
+function mouseWheel(e){
+	if(game.gamestate == 'game') {
+		player.mouseWheel(e.delta);
+	}
+}
 
 
 /*

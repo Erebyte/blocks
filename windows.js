@@ -310,7 +310,7 @@ GameMenu.prototype.open = function () {
 					if(ok)oi=opt_opts.length-1;
 					switch (oi) {
 						case 0: //debug options
-							var str = 'To toggle debug press:\n  "1" for general\n  "2" for terrain';
+							var str = 'To toggle debug press:\n  "1" for general\n  "2" for terrain\n  "3" for player';
 							windows.newSimple([str],width*0.6,height*0.6, width*0.7, height*0.6, function(){
 								windows.newKeyPress(kp,sel);
 							});
