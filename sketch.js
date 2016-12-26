@@ -7,7 +7,7 @@
 */
 
 // Globals and Constants //
-var VERSION = 'pra-alpha:0.4.5';
+var VERSION = 'pra-alpha: v0.5.1'; // version.release.patch
 var game;
 var player;
 var windows;
@@ -34,6 +34,27 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
+	entities.push(new Rat(createVector(200,500)));
+	entities.push(new Rat(createVector(10,500)));
+	entities.push(new Rat(createVector(20,50)));
+	// entities.push(new Rat(createVector(50,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),5));
+
 }
 
 // -=-=- Draw -=- Main Game Loop -=-=- //
@@ -57,10 +78,12 @@ function draw () {
 		fill(100);
 		textAlign(CENTER);
 		textFont("Georgia");
+		textSize(80);
+		text("Blocks!", width/2, height/4);
 		textSize(40);
-		text("Spacebar to play", width/2, height/2);
+		text('"T" to start', width/2, height/2);
 		textSize(12);
-		text("Version "+VERSION, width*0.85, height*0.95);
+		text(VERSION, width*0.9, height*0.95);
 		pop();
 	}else if (game.gamestate == "pregame"){
 		background(30);
@@ -104,31 +127,27 @@ function draw () {
 		windows.update();
 		camera.update(player);
 
-		// blit all sprites
-		// for (var i = npcs.length - 1; i >= 0; i--) {
-		// 	var npc = npcs[i];
-		// 	blit(npc,npc.y);
-		// }
 		// blit all entities
 		for (var i = entities.length - 1; i >= 0; i--) {
 			var e = entities[i];
-			if(collideRectCircle(camera.x-width/2,camera.y-height/2,width,height,e.x,e.y,300))blit(e,e.y);
-			// if(collidePointPoint(player.x,player.y,e.x,e.y,200))blit(e,e.y);
-			// blit(e,e.y);
+			if(collideRectCircle(camera.x-width/2,camera.y-height/2,width,height,e.x,e.y,300)){
+				e.update();
+				blit(e,e.y);
+			}else if (player.party_members.indexOf(e) != -1) e.update();
 		}
 		blit(player,player.y);
 
 		// draw
-		terrain.draw(camera.x, camera.y);
+		terrain.draw();
 		push();
 		translate(width/2-camera.x, height/2-camera.y);
 		draw_blitz();
-		// camera.draw();
 		pop();
 		terrain.fog.draw(player, camera);
 		windows.draw();
 		
 		if(terrain._debug)terrain.draw_debug();
+		if(player._debug)player.draw_debug();
 		if(game.debug_mode)game.draw_debug();
 	}
 }
@@ -155,23 +174,10 @@ function pushNPC (npc) {
 
 function keyPressed() {
 	if (game.gamestate == "startmenu") {
-		if (key == ' ') {
+		if (key == 'T') {
 			game.setGamestate("pregame");
-			var strs = ["W+S to swap genders\nA+D to change color\nT to talk","Make You..."];
-			var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
-			var kp_id = windows.kp.length;
-			windows.kp.push(function (key) {
-				if (key == 'T') {
-					windows.windows[win].next();
-				}
-			});
-			windows.windows[win].unload = function () {
-				windows.kp[kp_id] = null;
-			};
-		}else if (keyCode == LEFT_ARROW) {
-			console.log("left");
-		}else if (keyCode == RIGHT_ARROW) {
-			console.log("right");
+			var strs = ["W+S to swap genders\nA+D to change color","Make You..."];
+			var win = windows.newSimple(strs);
 		}
 	}else if (game.gamestate == 'pregame') {
 		if (!windows.open_window) {
@@ -202,14 +208,24 @@ function keyPressed() {
 		}
 		if(key == '1') game.toggleDebug();
 		if(key == '2') terrain.toggleDebug();
+		if(key == '3') player.toggleDebug();
 		if(key == 'E' && !windows.open_window) windows.menu.open();
 	}
-	console.log(keyCode + " : " + key);
+	if(game.debug_mode)console.log(keyCode + " : " + key);
 }
 
 function mousePressed() { // For debug use !?!?! //
+	if(game.gamestate == 'game') {
+		player.mousePressed(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	}
+
 	// console.log('mouse:', mouseX, mouseY);
 	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+}
+function mouseWheel(e){
+	if(game.gamestate == 'game') {
+		player.mouseWheel(e.delta);
+	}
 }
 
 

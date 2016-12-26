@@ -34,7 +34,10 @@ var NPC = function (data) {
 
 	this.txt_ord = 0;
 
-	this.flags = data.flags || {}; // should 'merge' not 'or'
+	this.flags = Object.assign({}, data.flags);
+	this.attribs = Object.assign({
+			'speed':2
+		}, this.attribs);
 
 	var h = data.hue || random(360);
 	var s = 0;
@@ -62,6 +65,8 @@ var NPC = function (data) {
 	this.color_h = h;
 	this.color_s = s;
 	this.color_b = b;
+
+	this.debug_data = [];
 };
 NPC.prototype = Object.create(GameEntity.prototype);
 
@@ -73,18 +78,8 @@ NPC.prototype.draw = function () {
 	colorMode(RGB, 255);
 };
 NPC.prototype.update = function () {
-	if (keyIsDown(87)) {//w
-		this.move(0, -1);
-	}
-	if (keyIsDown(83)){//s
-		this.move(0, 1);
-	}
-	if (keyIsDown(65)){//a
-		this.move(-1, 0);
-	}
-	if (keyIsDown(68)){//d
-		this.move(1, 0);
-	}
+	var vec = this.AI.movePathVector();
+	if(vec && !this.flags['talking']) this.move(vec.x,vec.y);
 };
 NPC.prototype.move = function (x, y) {
 	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
@@ -94,17 +89,8 @@ NPC.prototype.move = function (x, y) {
 NPC.prototype.check = function () {
 	if (this.flags['talking'] !== true) {
 		var strs = this.get_text();
-		var win = windows.newWindow(strs, width/2, height*0.8, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
+		var win = windows.newSimple(strs, width/2, height*0.8, width*0.9, height/2*0.60, function (){self.flags['talking'] = false;});
 		this.flags['talking'] = true;
 	}
 };
@@ -128,18 +114,27 @@ NPC.prototype.get_text = function () {
 	var ret_text;
 	var ret_prop;
 	var self = this;
+	if (this.flags['override_text']) return [this.flags['override_text']];
 	try {
 		for (var prop in this.data.text) {
 			if (prop == 'default' || this.flags['text_state'] === prop) {
 				ret_text = this.data.text[prop][index];
 				ret_prop = prop;
 			}
+			if (prop.slice(0,1)=='#' && game.flags[prop.slice(1)] === true) {
+				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
+			}
+		}
+		if(index >= this.data.text[ret_prop].length) {
+			this.txt_ord = 0;
+			return this.get_text();
 		}
 		var objCallback = function (obj) {
-			return function () {
+			return function (w) {
 				for (var func in obj) {
 					if (typeof windows.flagFunctions[func] == 'function') {
-						windows.flagFunctions[func](self, obj[func]);
+						windows.flagFunctions[func](self, w, obj[func]);
 					}
 				}
 			};
@@ -154,13 +149,106 @@ NPC.prototype.get_text = function () {
 		}
 		if(this.flags['repeatln']!==true) {
 			this.txt_ord++;
-			if(index == this.data.text[ret_prop].length-1)this.txt_ord = 0;
+			if(index >= this.data.text[ret_prop].length-1)this.txt_ord = 0;
 		}
 		return ret_text || ['Default text.'];
 	}catch (err) {
+		console.log(err);
 		return ['Default text.'];
 	}
 };
+
+
+
+// -=-=-=-=- Rat -=-=-=- 
+//
+//
+var Rat = function (pos, size) {
+	GameEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+
+	this.size = size || random(0.75,1.5);
+	this.tail_len = floor(random(5,15)*this.size);
+
+	this.attribs = Object.assign({
+			'speed':random(4,6)*(1/this.size)
+		}, this.attribs);
+
+	this.path_history = [];
+	this.facing_dir = createVector(1,0);
+
+	this.rotation_direction = 1; //-1 || 1
+	this.circleing_radius = random(100,200);
+
+};
+Rat.prototype = Object.create(GameEntity.prototype);
+
+// -=- functions -=- //
+Rat.prototype.move = function (x, y) {
+	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
+	this.x += x*spd;
+	this.y += y*spd;
+
+	//draw stuff
+	this.path_history.push([this.x,this.y]);
+	this.facing_dir = createVector(x,y);
+	this.facing_dir.normalize();
+	if(this.path_history.length > this.tail_len) {
+		this.path_history = this.path_history.slice(1);
+	}// end
+};
+Rat.prototype.draw = function () {
+	var w = this.size * 5;
+	var h = this.size * 15;
+	var s = this.size * 7;
+	push();
+	push();
+	translate(this.x,this.y);
+	rotate(this.facing_dir.heading()+PI/2);
+	noStroke();
+	fill(41, 17, 66);
+	ellipse(-w/2,-h*0.9,s,s);
+	ellipse(w/2,-h*0.9,s,s);
+	stroke(0);
+	fill(103, 25, 103);
+	triangle(-w,0,0,-h,w,0);
+	pop();
+	noFill();
+	beginShape();
+	for (var i = this.path_history.length - 1; i >= 0; i-=5) {
+		var v = this.path_history[i];
+		vertex(v[0],v[1]);
+	}
+	endShape();
+	pop();
+};
+Rat.prototype.update = function () {
+	var dest = this.AI.getPathDestination();
+	if(dist(dest[0],dest[1],player.x,player.y) > 100) {
+		this.AI.pathPush([player.x, player.y]);
+	}else if (dist(this.x,this.y,player.x,player.y) < this.circleing_radius+random(-20,20)){
+		var vec = this.AI.movePathVector();
+		if (vec && dist(this.x,this.y,player.x,player.y) < 30){
+			this.AI.clearPath();
+			if(random()<0.25)this.rotation_direction*=-1;
+		}
+		if (vec) {
+			this.move(vec.x, vec.y);
+		}else {
+			var d = createVector(player.x-this.x,player.y-this.y);
+			d.rotate(radians(95*this.rotation_direction));
+			d.normalize();
+			this.move(d.x,d.y);
+		}
+	}else {
+		var vec = this.AI.movePathVector();
+		if(vec)this.move(vec.x, vec.y);
+	}
+
+};
+
 
 
 // -=-=-=-=- TREE -=-=-=- //
@@ -177,7 +265,7 @@ var Tree = function (pos, w, size) {
 		x:pos.x,
 		y:pos.y
 	});
-	size = size || 1;
+	this.size = size = size || random(1,1.5);
 	this.w = w || random(30,50);
 	this.w = this.w*size;
 	this.h = 60*size;
@@ -213,20 +301,11 @@ Tree.prototype.draw = function () {
 	pop();
 };
 Tree.prototype.check = function () {
-	if (this.flags['talking'] !== true) {
-		var strs = ['This is a tree...'];
-		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
+	if (this.flags['checking'] !== true) {
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
-		this.flags['talking'] = true;
+		var strs = ['This is a tree...'];
+		var win = windows.newSimple(strs, width/2, height*0.2, width*0.9, height/2*0.60, function () {self.flags['checking'] = false;});
+		this.flags['checking'] = true;
 	}
 };
 Tree.prototype.do_check = function (p) {
@@ -274,7 +353,7 @@ Tree.prototype._gen_branch = function (tri, angle, size) {
 		this._gen_branch(new_tri, angle+-1*(Math.random()*40+20), size);
 	}
 	if (size < 15) {
-		this.points.push([tri[2]+p1x,tri[3]-p1y,Math.random()*10+5,45,Math.random()*40+60,Math.random()*40+30]);
+		this.points.push([tri[2]+p1x,tri[3]-p1y,Math.random()*10+5,45,Math.random()*40+60,Math.random()*40+30]); // x,y,s, h,s,b
 	}
 };
 Tree.prototype.generate = function () {
@@ -289,8 +368,8 @@ Tree.prototype.generate = function () {
 	this.vertices.push([p1x,p1y,p2x,p2y,p3x,p3y]);
 	this.vertices.push([p1x,p1y,this.x,this.y+10,p3x,p3y]);
 
-	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20);
-	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20));
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], Math.random()*60+20, this.size*20);
+	this._gen_branch([p1x,p1y,p2x,p2y,p3x,p3y], -1*(Math.random()*60+20), this.size*20);
 	// console.log(this.vertices);
 };
 
@@ -452,20 +531,11 @@ Tombstone.prototype.draw = function () {
 	pop();
 };
 Tombstone.prototype.check = function () {
-	if (this.flags['talking'] !== true) {
-		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
-		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
+	if (this.flags['checking'] !== true) {
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
-		this.flags['talking'] = true;
+		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
+		var win = windows.newSimple(strs, width/2, height*0.2, width*0.9, height/2*0.60, function () {self.flags['checking'] = false;});
+		this.flags['checking'] = true;
 	}
 };
 Tombstone.prototype.do_check = function (p) {

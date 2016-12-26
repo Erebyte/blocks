@@ -69,18 +69,9 @@ House.prototype.draw = function () {
 };
 House.prototype.check = function () {
 	if (this.flags['talking'] !== true) {
-		var strs = ['This is a house...'];
-		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-		var kp_id = windows.newKeyPress(function (key) {
-			if (key == 'T') {
-				windows.windows[win].next();
-			}
-		});
 		var self = this;
-		windows.windows[win].unload = function () {
-			self.flags['talking'] = false;
-			windows.kp[kp_id] = null;
-		};
+		var strs = ['This is a house...'];
+		var win = windows.newSimple(strs, width/2, height*0.2, width*0.9, height/2*0.60, function () {self.flags['talking'] = false;});
 		this.flags['talking'] = true;
 	}
 };

@@ -170,8 +170,7 @@ Terrain.prototype.toggleDebug = function () {
 };
 Terrain.prototype.draw = function (xoff, yoff) {
 	push();
-	translate(-xoff, -yoff);
-	translate(width/2, height/2);
+	translate(width/2-camera.x, height/2-camera.y);
 
 	fill(30);
 	for (pi=0;pi<this.poly.length;pi++){
@@ -338,7 +337,7 @@ Terrain.prototype.loadmap = function (url) {
 			var ent = json.entities[i];
 			// FIX: use lookup not if; else if
 			if (ent.type == 'Tree') {
-				entities.push(new Tree(createVector(ent.pos[0],ent.pos[1])));
+				entities.push(new Tree(createVector(ent.pos[0],ent.pos[1]),null,ent.size));
 			}else if (ent.type == 'Grass') {
 				entities.push(new Grass(createVector(ent.pos[0],ent.pos[1]),ent.size));
 			}else if (ent.type == 'House') {
