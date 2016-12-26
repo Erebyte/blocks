@@ -34,9 +34,10 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Rat(createVector(200,500)));
-	entities.push(new Rat(createVector(10,500)));
-	entities.push(new Rat(createVector(20,50)));
+	entities.push(new Post(createVector(200,400)));
+	// entities.push(new Rat(createVector(200,500)));
+	// entities.push(new Rat(createVector(10,500)));
+	// entities.push(new Rat(createVector(20,50)));
 	// entities.push(new Rat(createVector(50,50)));
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));

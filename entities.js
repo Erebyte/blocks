@@ -250,6 +250,61 @@ Rat.prototype.update = function () {
 };
 
 
+// -=-=-=-=- POST -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
+var Post = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	// this.sway = random(-10,10);
+	this.sway = -5;
+	this.h = random(20,30);
+	// this.size = size = size || random(1,1.5);
+	// this.w = w || random(30,50);
+	// this.w = this.w*size;
+	// this.h = 60*size;
+	// this.vertices = [];
+	// this.points = [];
+	// this.anm = function () {
+	// 	console.log("anm Post");
+	// };
+	// this.generate();
+};
+Post.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Post.prototype.draw = function () {
+	push();
+	var ps = [
+		createVector(this.x-10,this.y+6),
+		createVector(this.x-10-this.sway,this.y-6),
+		createVector(this.x+10-this.sway,this.y-6),
+		createVector(this.x+10,this.y+6)
+	];
+	fill(120);
+	quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+	
+	ps = [
+		createVector(this.x-5,this.y),
+		createVector(this.x-5-this.sway,this.y-this.h-this.sway),
+		createVector(this.x+5-this.sway,this.y-this.h),
+		createVector(this.x+5,this.y)
+	];
+	fill(86, 63, 41);
+	quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+	pop();
+};
+
+
+
 
 // -=-=-=-=- TREE -=-=-=- //
 //

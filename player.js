@@ -110,8 +110,9 @@ Player.prototype.mousePressed = function (mx,my) {
 	vec.setMag(10);
 	vec.z = gr_h+zoff;
 	this.flags['grapple_update'] = function () {
-		if(p5.Vector.angleBetween(vec,friction)<=1 && self.flags['grapple_pos'].z<=0) grapple_ud=false;
+		self.flags['grapple_slide'] = false;
 		if(grapple_ud) {
+			if(p5.Vector.angleBetween(vec,friction)<=1 && self.flags['grapple_pos'].z<=0) grapple_ud=false;
 			var g_vec = p5.Vector.sub(self.flags['grapple_pos'],createVector(self.x,self.y));
 			var g_len = g_vec.mag();
 			g_vec.normalize();
@@ -122,9 +123,11 @@ Player.prototype.mousePressed = function (mx,my) {
 			}
 			self.flags['grapple_pos'].add(vec);
 			vec.add(gravity);
+
 			if(self.flags['grapple_pos'].z<=0 ) {
 				self.flags['grapple_pos'].z=0;
 				vec.add(friction);
+				self.flags['grapple_slide'] = true;
 			}
 		}
 	};
@@ -151,7 +154,7 @@ Player.prototype.toggleDebug = function () {
 };
 Player.prototype.update = function () {
 	if(!windows.open_window) {
-		if(this.flags['grapple_update'])this.flags['grapple_update']();
+		this.update_grapple();
 
 		var mx = 0;
 		var my = 0;
@@ -205,6 +208,34 @@ Player.prototype.update = function () {
 			mem.flags['do_move'] = false;
 			mem.flags['move_path'] = null;
 			mem.flags['move_cb'] = null;
+		}
+	}
+};
+Player.prototype.update_grapple = function () {
+	if(this.flags['do_grapple']) {
+		if(this.flags['grapple_update'])this.flags['grapple_update']();
+
+		var self = this;
+		var pos = this.flags['grapple_pos'];
+		var hits = [];
+		var do_hit = function (e) {
+			var hit_type;
+			if(pos.z>0) {
+				hit_type='air';
+			}else if (pos.z === 0 && self.flags['grapple_slide']) {
+				hit_type = 'slide';
+			}else if (pos.z === 0) {
+				hit_type='ground';
+			}
+			console.log('hit: '+hit_type,e.x,e.y);
+
+		};
+		for (var i = entities.length - 1; i >= 0; i--) {
+			var e = entities[i];
+			if(dist(e.x,e.y,pos.x,pos.y)<10+(e.w||10))hits.push(e);
+		}
+		for (i = hits.length - 1; i >= 0; i--) {
+			do_hit(hits[i]);
 		}
 	}
 };
