@@ -246,7 +246,11 @@ Rat.prototype.update = function () {
 		var vec = this.AI.movePathVector();
 		if(vec)this.move(vec.x, vec.y);
 	}
-
+};
+Rat.prototype.grapple = function (state) {
+	if(state=='air' || state == 'slide') {
+		entities.splice(entities.indexOf(this),1);
+	}
 };
 
 
@@ -264,19 +268,9 @@ var Post = function (pos) {
 		x:pos.x,
 		y:pos.y
 	});
-	// this.sway = random(-10,10);
-	this.sway = -5;
+	this.sway = random(-5,5);
+	// this.sway = -5;
 	this.h = random(20,30);
-	// this.size = size = size || random(1,1.5);
-	// this.w = w || random(30,50);
-	// this.w = this.w*size;
-	// this.h = 60*size;
-	// this.vertices = [];
-	// this.points = [];
-	// this.anm = function () {
-	// 	console.log("anm Post");
-	// };
-	// this.generate();
 };
 Post.prototype = Object.create(TerrainEntity.prototype);
 
@@ -301,6 +295,30 @@ Post.prototype.draw = function () {
 	fill(86, 63, 41);
 	quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
 	pop();
+};
+Post.prototype.grapple = function (state) {
+	if(player.flags['grapple_obj']!= this && player.flags['grapple_cooldown']<=0) {
+		player.flags['grapple_state'] = true;
+		player.flags['grapple_obj'] = this;
+		var self = this;
+		var pos = player.flags['grapple_pos'];
+		var vec = p5.Vector.sub(pos, createVector(player.x,player.y));
+		vec.limit(10);
+		player.flags['grapple_update'] = function () {
+			pos = player.flags['grapple_pos'];
+			if(dist(pos.x,pos.y,self.x,self.y)>0.5){
+				var d = p5.Vector.sub(createVector(self.x,self.y),pos);
+				d.limit(7);
+				vec.mult(0.6);
+				vec.add(d);
+				player.flags['grapple_pos'].add(vec);
+			}else {
+				player.flags['grapple_update']=null;
+			}
+
+		};
+		console.log('grapple to post');
+	}
 };
 
 

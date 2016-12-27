@@ -62,6 +62,7 @@ Player.prototype.mouseWheel = function (delta) {
 	console.log(delta);
 	if (this.flags['do_grapple']) {
 		if (delta >= 300) {
+			this.flags['grapple_state']=false;
 			var self = this;
 			var pos;
 			var gr_h = 10;
@@ -82,9 +83,9 @@ Player.prototype.mouseWheel = function (delta) {
 				}
 			};
 
-		}else {
-
 		}
+		// else {
+		// }
 	}
 };
 Player.prototype.mousePressed = function (mx,my) {
@@ -100,6 +101,9 @@ Player.prototype.mousePressed = function (mx,my) {
 		this.flags['grapple_pos'] = createVector(this.x,this.y,0);
 	}
 	this.flags['grapple_click_dest'] = createVector(mx,my);
+	this.flags['grapple_state'] = false;
+	this.flags['grapple_obj'] = null;
+	this.flags['grapple_cooldown'] = 3;
 	var self = this;
 	var grapple_ud = true;
 	var gr_h = 3;
@@ -116,7 +120,7 @@ Player.prototype.mousePressed = function (mx,my) {
 			var g_vec = p5.Vector.sub(self.flags['grapple_pos'],createVector(self.x,self.y));
 			var g_len = g_vec.mag();
 			g_vec.normalize();
-			if(g_len>self.attribs['grapple_len']){
+			if(g_len>self.attribs['grapple_len'] && self.flags['grapple_cooldown']<=0){
 				var s = vec.mag()*0.25;
 				vec.x=-g_vec.x*s;
 				vec.y=-g_vec.y*s;
@@ -214,28 +218,50 @@ Player.prototype.update = function () {
 Player.prototype.update_grapple = function () {
 	if(this.flags['do_grapple']) {
 		if(this.flags['grapple_update'])this.flags['grapple_update']();
+		this.flags['grapple_cooldown']--;
 
-		var self = this;
-		var pos = this.flags['grapple_pos'];
-		var hits = [];
-		var do_hit = function (e) {
-			var hit_type;
-			if(pos.z>0) {
-				hit_type='air';
-			}else if (pos.z === 0 && self.flags['grapple_slide']) {
-				hit_type = 'slide';
-			}else if (pos.z === 0) {
-				hit_type='ground';
+		var pos;
+		var gvec;
+		if(!this.flags['grapple_state']) {
+			var self = this;
+			pos = this.flags['grapple_pos'];
+			var hits = [];
+			var do_hit = function (e) {
+				var hit_type;
+				if(pos.z>0) {
+					hit_type='air';
+				}else if (pos.z === 0 && self.flags['grapple_slide']) {
+					hit_type = 'slide';
+				}else if (pos.z === 0) {
+					hit_type='ground';
+				}
+				if(e.grapple)e.grapple(hit_type);
+				console.log('hit: '+hit_type,e.x,e.y);
+
+			};
+			for (var i = entities.length - 1; i >= 0; i--) {
+				var e = entities[i];
+				if(dist(e.x,e.y,pos.x,pos.y)<10+(e.w||10))hits.push(e);
 			}
-			console.log('hit: '+hit_type,e.x,e.y);
+			for (i = hits.length - 1; i >= 0; i--) {
+				do_hit(hits[i]);
+				if(this.flags['grapple_state']===true)break;
+			}
 
-		};
-		for (var i = entities.length - 1; i >= 0; i--) {
-			var e = entities[i];
-			if(dist(e.x,e.y,pos.x,pos.y)<10+(e.w||10))hits.push(e);
-		}
-		for (i = hits.length - 1; i >= 0; i--) {
-			do_hit(hits[i]);
+			gvec = createVector(pos.x-this.x,pos.y-this.y);
+			if(gvec.mag()>this.attribs['grapple_len']) {
+				gvec.limit(this.attribs['grapple_len']);
+				this.flags['grapple_pos'] = p5.Vector.add(createVector(this.x,this.y),gvec);
+			}
+		}else{
+			pos = this.flags['grapple_pos'];
+			gvec = createVector(this.x-pos.x,this.y-pos.y);
+			if(gvec.mag()>this.attribs['grapple_len']) {
+				gvec.limit(this.attribs['grapple_len']);
+				var vec = p5.Vector.add(createVector(pos.x,pos.y),gvec);
+				this.x = vec.x;
+				this.y = vec.y;
+			}
 		}
 	}
 };
