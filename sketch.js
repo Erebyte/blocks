@@ -1,6 +1,6 @@
 /*
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-//				-=- Terrain -=-			   //
+//				-=- Sketch -=-			   //
 //										   //
 // doc string thing						   //
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
@@ -37,26 +37,26 @@ function setup () {
 	entities.push(new Post(createVector(200,400)));
 	entities.push(new Post(createVector(250,400)));
 
-	entities.push(new Rat(createVector(200,500)));
-	entities.push(new Rat(createVector(10,500)));
-	entities.push(new Rat(createVector(20,50)));
-	entities.push(new Rat(createVector(50,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50),2));
-	entities.push(new Rat(createVector(100,50),2));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50)));
-	entities.push(new Rat(createVector(100,50),5));
+	// entities.push(new Rat(createVector(200,500)));
+	// entities.push(new Rat(createVector(10,500)));
+	// entities.push(new Rat(createVector(20,50)));
+	// entities.push(new Rat(createVector(50,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(100,50),2));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50)));
+	// entities.push(new Rat(createVector(100,50),5));
 
 }
 

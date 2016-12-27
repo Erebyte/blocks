@@ -250,7 +250,7 @@ Game.prototype.draw_debug = function () {
 	fill(200);
 	text("Debug Mode",10,20);
 	text("e:"+draw_q.length+'/'+entities.length,10,40);
-	text("p:("+Math.floor(player.x)+','+Math.floor(player.y)+")",10,50);
+	text("p:("+Math.floor(player.x)+','+Math.floor(player.y)+','+Math.floor(player.z)+")",10,50);
 	
 	// FPS 
 	text("FPS:"+Math.floor(frameRate()), width-400, 20);
