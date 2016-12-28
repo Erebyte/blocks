@@ -297,28 +297,30 @@ Post.prototype.draw = function () {
 	pop();
 };
 Post.prototype.grapple = function (state) {
-	if(player.flags['grapple_obj']!= this && player.flags['grapple_cooldown']<=0) {
-		player.flags['grapple_state'] = true;
-		player.flags['grapple_obj'] = this;
-		var self = this;
-		var pos = player.flags['grapple_pos'];
-		var vec = p5.Vector.sub(pos, createVector(player.x,player.y));
-		vec.limit(10);
-		player.flags['grapple_update'] = function () {
-			pos = player.flags['grapple_pos'];
-			if(dist(pos.x,pos.y,self.x,self.y)>0.5){
-				var d = p5.Vector.sub(createVector(self.x,self.y),pos);
-				d.limit(7);
-				vec.mult(0.6);
-				vec.add(d);
-				player.flags['grapple_pos'].add(vec);
-			}else {
-				player.flags['grapple_update']=null;
-			}
-
-		};
-		console.log('grapple to post');
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
 	}
+	// 	player.flags['grapple_state'] = true;
+	// 	player.flags['grapple_obj'] = this;
+	// 	var self = this;
+	// 	var pos = player.flags['grapple_pos'];
+	// 	var vec = p5.Vector.sub(pos, createVector(player.x,player.y));
+	// 	vec.limit(10);
+	// 	player.flags['grapple_update'] = function () {
+	// 		pos = player.flags['grapple_pos'];
+	// 		if(dist(pos.x,pos.y,self.x,self.y)>0.5){
+	// 			var d = p5.Vector.sub(createVector(self.x,self.y),pos);
+	// 			d.limit(7);
+	// 			vec.mult(0.6);
+	// 			vec.add(d);
+	// 			player.flags['grapple_pos'].add(vec);
+	// 		}else {
+	// 			player.flags['grapple_update']=null;
+	// 		}
+
+	// 	};
+	// 	console.log('grapple to post');
+	// }
 };
 
 
