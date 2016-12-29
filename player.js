@@ -10,6 +10,7 @@ var Grapple = function (parent) {
 	this.parent = parent;
 	this.is_out = false;
 	this.pos=createVector();
+	this.vec=createVector();
 	this.maxLen = 200;
 	this.curLen=0;
 	this.state=false;
@@ -18,31 +19,29 @@ var Grapple = function (parent) {
 		throw:function(g){
 			var grapple_ud = true;
 			var gr_h = 3;
-			var vec = p5.Vector.sub(g._dest,g._start);
+			g.vec = p5.Vector.sub(g._dest,g._start);
 			var gravity = createVector(0,0,-0.3);
-			var friction = vec.copy();
+			var friction = g.vec.copy();
 			friction.setMag(-2);
 
-			vec.setMag(10);
-			vec.z = gr_h+(g.pos.z*-0.3);
+			g.vec.setMag(10);
+			g.vec.z = gr_h+(g.pos.z*-0.3);
 			g._ud_function = function () {
 				g.is_sliding = false;
 				if(grapple_ud) {
-					if(p5.Vector.angleBetween(vec,friction)<=1 && g.pos.z<=0) grapple_ud=false;
+					if(p5.Vector.angleBetween(g.vec,friction)<=1 && g.pos.z<=0) grapple_ud=false;
 					var g_vec = p5.Vector.sub(g.pos,createVector(g.parent.x,g.parent.y));
 					var g_len = g_vec.mag();
 					g_vec.normalize();
 					if(g_len>g.maxLen && g.cooldown<=0){
-						var s = vec.mag()*0.25;
-						vec.x=-g_vec.x*s;
-						vec.y=-g_vec.y*s;
+						g.state_functions.bounce(g);
 					}
-					g.pos.add(vec);
-					vec.add(gravity);
+					g.pos.add(g.vec);
+					g.vec.add(gravity);
 
 					if(g.pos.z<=0 ) {
 						g.pos.z=0;
-						vec.add(friction);
+						g.vec.add(friction);
 						g.is_sliding = true;
 					}
 				}
@@ -54,12 +53,12 @@ var Grapple = function (parent) {
 			var c = 0;
 			g._ud_function = function () {
 				pos = g.pos;
-				vec = createVector(g.parent.x-pos.x,g.parent.y-pos.y,0);
+				g.vec = createVector(g.parent.x-pos.x,g.parent.y-pos.y,0);
 				// vec = createVector(0,0,0);
-				vec.limit(20);
-				vec.z = gr_h-(c*(c/3));
+				g.vec.limit(20);
+				g.vec.z = gr_h-(c*(c/3));
 				c++;
-				g.pos.add(vec);
+				g.pos.add(g.vec);
 				if(g.pos.z<=0){
 					g.pos.z=0;
 				}
@@ -68,25 +67,40 @@ var Grapple = function (parent) {
 				}
 			};
 		},
+		pull:function(g){
+			console.log('pulling player');
+			g.state_functions.retract(g);
+		},
+		throw_obj:function(g, obj){
+			console.log('throwing obj');
+			g.state_functions.retract(g);
+		},
 		lock:function(g, obj){
 			g.state = true;
-			g.target_obj = this;
+			g.target_obj = obj;
 			var self = this;
 			var pos = g.pos;
-			var vec = p5.Vector.sub(pos, createVector(player.x,player.y));
-			vec.limit(10);
+			g.vec = p5.Vector.sub(pos, createVector(player.x,player.y));
+			g.vec.limit(10);
 			g._ud_function = function () {
 				pos = g.pos;
 				if(dist(pos.x,pos.y,obj.x,obj.y)>0.5){
 					var d = p5.Vector.sub(createVector(obj.x,obj.y),pos);
 					d.limit(7);
-					vec.mult(0.6);
-					vec.add(d);
-					g.pos.add(vec);
+					g.vec.mult(0.6);
+					g.vec.add(d);
+					g.pos.add(g.vec);
 				}else {
 					g._ud_function=null;
 				}
 			};
+		},
+		bounce:function(g){
+			var g_vec = p5.Vector.sub(createVector(g.parent.x,g.parent.y),g.pos);
+			g_vec.normalize();
+			var s = g.vec.mag()*0.25;
+			g.vec.x=g_vec.x*s;
+			g.vec.y=g_vec.y*s;
 		}
 	};
 };
@@ -129,7 +143,13 @@ Grapple.prototype.retract = function (delta) {
 			if (!this.state) {
 				this.state_functions.retract(this);
 			}else {
-				this.state_functions.retract(this);
+				var e = this.target_obj;
+				if(e.flags.throwable !== true) {
+					this.state_functions.pull(this);
+				}else {
+					this.state_functions.throw_obj(this,e);
+				}
+				// this.state_functions.retract(this);
 				// console.log('pull?');
 				// var self = this;
 				// var pos;

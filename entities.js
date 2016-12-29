@@ -324,6 +324,40 @@ Post.prototype.grapple = function (state) {
 };
 
 
+// -=-=-=-=- ROCK -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
+var Rock = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+
+	this.flags.throwable = true;
+	// this.sway = random(-5,5);
+	// this.sway = -5;
+	// this.h = random(20,30);
+};
+Rock.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Rock.prototype.draw = function () {
+	push();
+	fill(70);
+	ellipse(this.x,this.y,20,10);
+	pop();
+};
+Rock.prototype.grapple = function (state) {
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
+	}
+};
 
 
 // -=-=-=-=- TREE -=-=-=- //
