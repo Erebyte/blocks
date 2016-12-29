@@ -122,6 +122,7 @@ var GameEntity = function (entity_data) {
 	this.data = entity_data || {};
 	this.x = entity_data.x || 0;
 	this.y = entity_data.y || 0;
+	this.z = entity_data.z || 0;
 
 	this.attribs = entity_data.attribs || {};
 };
@@ -142,7 +143,25 @@ GameEntity.prototype.animate = function () {
 	}
 };
 GameEntity.prototype.collide = function () {return false;};
-GameEntity.prototype.update = function () {return false;};
+GameEntity.prototype.update = function () {
+	if(this.flags._move_vector){
+		var v = this.flags._move_vector;
+		this.x+=v.x;
+		this.y+=v.y;
+		this.z+=v.z;
+		if(this.z<0)this.z=0;
+		if(this.flags.gravity){
+			this.flags._move_vector.add(createVector(0,0,-0.5));
+		}
+		if(this.z===0 && this.flags.friction){
+			var vec = this.flags._move_vector.copy();
+			vec.z = 0;
+			vec.mult(-1);
+			vec.limit(2);
+			this.flags._move_vector.add(vec);
+		}
+	}
+};
 
 
 // -=- AI -=- //

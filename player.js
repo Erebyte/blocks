@@ -47,12 +47,14 @@ var Grapple = function (parent) {
 				}
 			};
 		},
-		retract:function(g){
+		retract:function(g, cb){
 			var pos;
 			var gr_h = 10;
 			var c = 0;
 			g._ud_function = function () {
+				if(cb)cb();
 				pos = g.pos;
+				var dis = dist(g.parent.x,g.parent.y,pos.x,pos.y);
 				g.vec = createVector(g.parent.x-pos.x,g.parent.y-pos.y,0);
 				// vec = createVector(0,0,0);
 				g.vec.limit(20);
@@ -62,7 +64,8 @@ var Grapple = function (parent) {
 				if(g.pos.z<=0){
 					g.pos.z=0;
 				}
-				if(dist(g.parent.x,g.parent.y,pos.x,pos.y)<=10){
+				if(dis<=10){
+					g._ud_function=null;
 					g.is_out = false;
 				}
 			};
@@ -73,7 +76,17 @@ var Grapple = function (parent) {
 		},
 		throw_obj:function(g, obj){
 			console.log('throwing obj');
-			g.state_functions.retract(g);
+			g.cooldown = 5;
+			// obj.flags._move_vector = p5.Vector.sub(createVector(g.parent.x,g.parent.y),g.pos);
+			// obj.flags._move_vector.setMag(2);
+
+			g.state_functions.retract(g, function(){
+				obj.x = g.pos.x;
+				obj.y = g.pos.y;
+				obj.z = g.pos.z;
+				obj.flags._move_vector = g.vec.copy();
+				obj.flags._move_vector.z-=2;
+			});
 		},
 		lock:function(g, obj){
 			g.state = true;
@@ -285,15 +298,17 @@ Player.prototype.draw = function () {
 	}
 };
 Player.prototype.keyPressed = function (key) {
-	if (key == 'T' && this.flags['check']) {
-		this.flags['checking'].check();
-	}
+	
 };
 Player.prototype.mouseWheel = function (delta) {
 	this.grapple.retract(delta);
 };
 Player.prototype.mousePressed = function (mx,my) {
-	this.grapple.grapple(mx,my);
+	if (this.flags['check']) {
+		this.flags['checking'].check();
+	}else {
+		this.grapple.grapple(mx,my);
+	}
 };
 Player.prototype.draw_debug = function () {
 	this.grapple.draw_debug();
@@ -305,10 +320,10 @@ Player.prototype.update = function () {
 	if(!windows.open_window) {
 		this.grapple.update();
 
-		if(this.z>0){
-			this.z -= 5;
-			if (this.z <= 0)this.z=0;
-		}
+		// if(this.z>0){
+		// 	this.z -= 5;
+		// 	if (this.z <= 0)this.z=0;
+		// }
 
 		var mx = 0;
 		var my = 0;

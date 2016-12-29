@@ -338,8 +338,9 @@ var Rock = function (pos) {
 		x:pos.x,
 		y:pos.y
 	});
-
-	this.flags.throwable = true;
+	this.flags['throwable'] = true;
+	this.flags.gravity = true;
+	this.flags.friction = true;
 	// this.sway = random(-5,5);
 	// this.sway = -5;
 	// this.h = random(20,30);
@@ -350,7 +351,7 @@ Rock.prototype = Object.create(TerrainEntity.prototype);
 Rock.prototype.draw = function () {
 	push();
 	fill(70);
-	ellipse(this.x,this.y,20,10);
+	ellipse(this.x,this.y-this.z,20,10);
 	pop();
 };
 Rock.prototype.grapple = function (state) {
