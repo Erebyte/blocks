@@ -181,7 +181,6 @@ var Rat = function (pos, size) {
 
 	this.rotation_direction = 1; //-1 || 1
 	this.circleing_radius = random(100,200);
-
 };
 Rat.prototype = Object.create(GameEntity.prototype);
 
@@ -250,6 +249,52 @@ Rat.prototype.update = function () {
 Rat.prototype.grapple = function (state) {
 	if(state=='air' || state == 'slide') {
 		entities.splice(entities.indexOf(this),1);
+	}
+};
+
+// -=-=-=-=- ROCKCRAB -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+//
+var Rockcrab = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.flags.throwable = true;
+	this.flags.gravity = true;
+	this.flags.friction = true;
+
+	this.attribs = Object.assign({
+			'speed':2
+		}, this.attribs);
+	// this.sway = random(-5,5);
+	// this.sway = -5;
+	// this.h = random(20,30);
+};
+Rockcrab.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Rockcrab.prototype.draw = function () {
+	push();
+	fill(70);
+	ellipse(this.x,this.y-this.z,20,10);
+	pop();
+};
+Rockcrab.prototype.update = function () {
+	var dest = this.AI.getPathDestination();
+	if(dist(dest[0],dest[1],player.x,player.y)>300)this.AI.pathPush([player.x,player.y]);
+	if(dist(this.x,this.y,player.x,player.y)<100)this.AI.clearPath();
+	var vec = this.AI.movePathVector();
+	if(vec)this.move(vec.x, vec.y);
+	this._update();
+};
+Rockcrab.prototype.grapple = function (state) {
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
 	}
 };
 

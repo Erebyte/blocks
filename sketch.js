@@ -37,15 +37,15 @@ function setup () {
 	entities.push(new Post(createVector(200,400)));
 	entities.push(new Post(createVector(250,400)));
 
-	entities.push(new Rock(createVector(300,500)));
+	entities.push(new Rockcrab(createVector(300,500)));
 	entities.push(new Rock(createVector(320,500)));
 	entities.push(new Rock(createVector(340,500)));
 	entities.push(new Rock(createVector(300,520)));
-	entities.push(new Rock(createVector(320,520)));
+	entities.push(new Rockcrab(createVector(320,520)));
 	entities.push(new Rock(createVector(340,520)));
 	entities.push(new Rock(createVector(300,540)));
 	entities.push(new Rock(createVector(320,540)));
-	entities.push(new Rock(createVector(340,540)));
+	entities.push(new Rockcrab(createVector(340,540)));
 
 	// entities.push(new Rat(createVector(200,500)));
 	// entities.push(new Rat(createVector(10,500)));

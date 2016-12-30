@@ -132,18 +132,18 @@ GameEntity.prototype = Object.create(GameObject.prototype);
 GameEntity.prototype.setAttribute = function (attr, value) {
 	this.attribs[attr] = value;
 };
-GameEntity.prototype.setAttr = GameEntity.setAttribute;
+GameEntity.prototype.setAttr = GameEntity.prototype.setAttribute;
 GameEntity.prototype.getAttribute = function (attr) {
 	return this.attribs[attr];
 };
-GameEntity.prototype.getAttr = GameEntity.getAttribute;
+GameEntity.prototype.getAttr = GameEntity.prototype.getAttribute;
 GameEntity.prototype.animate = function () {
 	if (this.anm) {
 		this.anm();
 	}
 };
 GameEntity.prototype.collide = function () {return false;};
-GameEntity.prototype.update = function () {
+GameEntity.prototype._update = function () {
 	if(this.flags._move_vector){
 		var v = this.flags._move_vector;
 		this.x+=v.x;
@@ -161,6 +161,12 @@ GameEntity.prototype.update = function () {
 			this.flags._move_vector.add(vec);
 		}
 	}
+};
+GameEntity.prototype.update = GameEntity.prototype._update;
+GameEntity.prototype.move = function (x, y) {
+	var spd = (this.attribs['speed'] || 0) + (this.flags['spd_buf'] || 0);
+	this.x += x*spd;
+	this.y += y*spd;
 };
 
 
