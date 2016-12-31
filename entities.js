@@ -181,7 +181,6 @@ var Rat = function (pos, size) {
 
 	this.rotation_direction = 1; //-1 || 1
 	this.circleing_radius = random(100,200);
-
 };
 Rat.prototype = Object.create(GameEntity.prototype);
 
@@ -246,9 +245,172 @@ Rat.prototype.update = function () {
 		var vec = this.AI.movePathVector();
 		if(vec)this.move(vec.x, vec.y);
 	}
-
+};
+Rat.prototype.grapple = function (state) {
+	if(state=='air' || state == 'slide') {
+		entities.splice(entities.indexOf(this),1);
+	}
 };
 
+// -=-=-=-=- ROCKCRAB -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+//
+var Rockcrab = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.flags.throwable = true;
+	this.flags.gravity = true;
+	this.flags.friction = true;
+
+	this.attribs = Object.assign({
+			'speed':0.5
+		}, this.attribs);
+
+	this.close_r = random(200,300);
+	// this.sway = random(-5,5);
+	// this.sway = -5;
+	// this.h = random(20,30);
+};
+Rockcrab.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Rockcrab.prototype.draw = function () {
+	push();
+	fill(70);
+	ellipse(this.x,this.y-this.z,20,10);
+	pop();
+};
+Rockcrab.prototype.update = function () {
+	var dest = this.AI.getPathDestination();
+	var vec = this.AI.movePathVector();
+	var dis = dist(this.x,this.y,player.x,player.y);
+	if(dis<this.close_r && random()<0.03){
+		this.AI.clearPath();
+	}else if(!vec && random()<=0.005*(dis*0.005)){
+		this.AI.pathPush([player.x,player.y]);
+	}else if(vec){
+		this.move(vec.x, vec.y);
+	}
+	this._update();
+};
+Rockcrab.prototype.grapple = function (state) {
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
+	}
+};
+
+
+// -=-=-=-=- POST -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
+var Post = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.sway = random(-5,5);
+	// this.sway = -5;
+	this.h = random(20,30);
+};
+Post.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Post.prototype.draw = function () {
+	push();
+	var ps = [
+		createVector(this.x-10,this.y+6),
+		createVector(this.x-10-this.sway,this.y-6),
+		createVector(this.x+10-this.sway,this.y-6),
+		createVector(this.x+10,this.y+6)
+	];
+	fill(120);
+	quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+	
+	ps = [
+		createVector(this.x-5,this.y),
+		createVector(this.x-5-this.sway,this.y-this.h-this.sway),
+		createVector(this.x+5-this.sway,this.y-this.h),
+		createVector(this.x+5,this.y)
+	];
+	fill(86, 63, 41);
+	quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+	pop();
+};
+Post.prototype.grapple = function (state) {
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
+	}
+	// 	player.flags['grapple_state'] = true;
+	// 	player.flags['grapple_obj'] = this;
+	// 	var self = this;
+	// 	var pos = player.flags['grapple_pos'];
+	// 	var vec = p5.Vector.sub(pos, createVector(player.x,player.y));
+	// 	vec.limit(10);
+	// 	player.flags['grapple_update'] = function () {
+	// 		pos = player.flags['grapple_pos'];
+	// 		if(dist(pos.x,pos.y,self.x,self.y)>0.5){
+	// 			var d = p5.Vector.sub(createVector(self.x,self.y),pos);
+	// 			d.limit(7);
+	// 			vec.mult(0.6);
+	// 			vec.add(d);
+	// 			player.flags['grapple_pos'].add(vec);
+	// 		}else {
+	// 			player.flags['grapple_update']=null;
+	// 		}
+
+	// 	};
+	// 	console.log('grapple to post');
+	// }
+};
+
+
+// -=-=-=-=- ROCK -=-=-=- //
+//
+// Args:
+// ----
+// 
+// pos:<vector2>
+// w:<int(width)> (default:range 30,50)
+// size:<int> (default:1)
+//
+var Rock = function (pos) {
+	TerrainEntity.call(this, {
+		x:pos.x,
+		y:pos.y
+	});
+	this.flags['throwable'] = true;
+	this.flags.gravity = true;
+	this.flags.friction = true;
+	// this.sway = random(-5,5);
+	// this.sway = -5;
+	// this.h = random(20,30);
+};
+Rock.prototype = Object.create(TerrainEntity.prototype);
+
+// -=- Functions -=- //
+Rock.prototype.draw = function () {
+	push();
+	fill(70);
+	ellipse(this.x,this.y-this.z,20,10);
+	pop();
+};
+Rock.prototype.grapple = function (state) {
+	if(player.grapple.target_obj != this && player.grapple.cooldown<=0) {
+		player.grapple.state_functions.lock(player.grapple,this);
+	}
+};
 
 
 // -=-=-=-=- TREE -=-=-=- //

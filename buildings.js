@@ -28,7 +28,7 @@ var BuildingEntity = function (entity_data) {
 BuildingEntity.prototype = Object.create(TerrainEntity.prototype);
 
 
-// -=-=-=-=- TREE -=-=-=- //
+// -=-=-=-=- House -=-=-=- //
 //
 // Args:
 // ----

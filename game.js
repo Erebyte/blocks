@@ -122,6 +122,7 @@ var GameEntity = function (entity_data) {
 	this.data = entity_data || {};
 	this.x = entity_data.x || 0;
 	this.y = entity_data.y || 0;
+	this.z = entity_data.z || 0;
 
 	this.attribs = entity_data.attribs || {};
 };
@@ -131,18 +132,42 @@ GameEntity.prototype = Object.create(GameObject.prototype);
 GameEntity.prototype.setAttribute = function (attr, value) {
 	this.attribs[attr] = value;
 };
-GameEntity.prototype.setAttr = GameEntity.setAttribute;
+GameEntity.prototype.setAttr = GameEntity.prototype.setAttribute;
 GameEntity.prototype.getAttribute = function (attr) {
 	return this.attribs[attr];
 };
-GameEntity.prototype.getAttr = GameEntity.getAttribute;
+GameEntity.prototype.getAttr = GameEntity.prototype.getAttribute;
 GameEntity.prototype.animate = function () {
 	if (this.anm) {
 		this.anm();
 	}
 };
 GameEntity.prototype.collide = function () {return false;};
-GameEntity.prototype.update = function () {return false;};
+GameEntity.prototype._update = function () {
+	if(this.flags._move_vector){
+		var v = this.flags._move_vector;
+		this.x+=v.x;
+		this.y+=v.y;
+		this.z+=v.z;
+		if(this.z<0)this.z=0;
+		if(this.flags.gravity){
+			this.flags._move_vector.add(createVector(0,0,-0.5));
+		}
+		if(this.z===0 && this.flags.friction){
+			var vec = this.flags._move_vector.copy();
+			vec.z = 0;
+			vec.mult(-1);
+			vec.limit(2);
+			this.flags._move_vector.add(vec);
+		}
+	}
+};
+GameEntity.prototype.update = GameEntity.prototype._update;
+GameEntity.prototype.move = function (x, y) {
+	var spd = (this.attribs['speed'] || 0) + (this.flags['spd_buf'] || 0);
+	this.x += x*spd;
+	this.y += y*spd;
+};
 
 
 // -=- AI -=- //
@@ -250,7 +275,7 @@ Game.prototype.draw_debug = function () {
 	fill(200);
 	text("Debug Mode",10,20);
 	text("e:"+draw_q.length+'/'+entities.length,10,40);
-	text("p:("+Math.floor(player.x)+','+Math.floor(player.y)+")",10,50);
+	text("p:("+Math.floor(player.x)+','+Math.floor(player.y)+','+Math.floor(player.z)+")",10,50);
 	
 	// FPS 
 	text("FPS:"+Math.floor(frameRate()), width-400, 20);

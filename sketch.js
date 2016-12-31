@@ -1,13 +1,13 @@
 /*
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
-//				-=- Terrain -=-			   //
+//				-=- Sketch -=-			   //
 //										   //
 // doc string thing						   //
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 */
 
 // Globals and Constants //
-var VERSION = 'pra-alpha: v0.5.1'; // version.release.patch
+var VERSION = 'pra-alpha: v0.5.4'; // version.release.patch
 var game;
 var player;
 var windows;
@@ -34,9 +34,24 @@ function setup () {
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Rat(createVector(200,500)));
-	entities.push(new Rat(createVector(10,500)));
-	entities.push(new Rat(createVector(20,50)));
+	entities.push(new Post(createVector(200,400)));
+	entities.push(new Post(createVector(200,600)));
+	entities.push(new Post(createVector(200,800)));
+	entities.push(new Post(createVector(250,400)));
+
+	entities.push(new Rockcrab(createVector(300,500)));
+	entities.push(new Rock(createVector(320,500)));
+	entities.push(new Rock(createVector(340,500)));
+	entities.push(new Rock(createVector(300,520)));
+	entities.push(new Rockcrab(createVector(320,520)));
+	entities.push(new Rock(createVector(340,520)));
+	entities.push(new Rock(createVector(300,540)));
+	entities.push(new Rock(createVector(320,540)));
+	entities.push(new Rockcrab(createVector(340,540)));
+
+	// entities.push(new Rat(createVector(200,500)));
+	// entities.push(new Rat(createVector(10,500)));
+	// entities.push(new Rat(createVector(20,50)));
 	// entities.push(new Rat(createVector(50,50)));
 	// entities.push(new Rat(createVector(100,50)));
 	// entities.push(new Rat(createVector(100,50)));
@@ -81,7 +96,7 @@ function draw () {
 		textSize(80);
 		text("Blocks!", width/2, height/4);
 		textSize(40);
-		text('"T" to start', width/2, height/2);
+		text('Click to start', width/2, height/2);
 		textSize(12);
 		text(VERSION, width*0.9, height*0.95);
 		pop();
@@ -173,33 +188,22 @@ function pushNPC (npc) {
 }
 
 function keyPressed() {
-	if (game.gamestate == "startmenu") {
-		if (key == 'T') {
-			game.setGamestate("pregame");
-			var strs = ["W+S to swap genders\nA+D to change color","Make You..."];
-			var win = windows.newSimple(strs);
-		}
-	}else if (game.gamestate == 'pregame') {
-		if (!windows.open_window) {
-			if (key == 'T') {
-				game.setGamestate("game");
-			}else if (key == 'W' || key == 'S') {
-				if (player.gender == 'male') {
-					player.gender = 'female';
-				}else {
-					player.gender = 'male';
-				}
-			}else if (key == 'A') {
-				player.color_h -= 5;
-				player.color_h += 360;
-				player.color_h %= 360;
-			}else if (key == 'D') {
-				player.color_h += 5;
-				player.color_h %= 360;
+	if (game.gamestate == 'pregame') {
+		if (key == 'W' || key == 'S') {
+			if (player.gender == 'male') {
+				player.gender = 'female';
+			}else {
+				player.gender = 'male';
 			}
-		}else {
-			windows.keyPressed(key);
+		}else if (key == 'A') {
+			player.color_h -= 5;
+			player.color_h += 360;
+			player.color_h %= 360;
+		}else if (key == 'D') {
+			player.color_h += 5;
+			player.color_h %= 360;
 		}
+		windows.keyPressed(key);
 	}else if (game.gamestate == 'game') {
 		if (!windows.open_window) {
 			player.keyPressed(key);
@@ -215,8 +219,22 @@ function keyPressed() {
 }
 
 function mousePressed() { // For debug use !?!?! //
-	if(game.gamestate == 'game') {
-		player.mousePressed(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	if (game.gamestate == "startmenu") {
+		game.setGamestate("pregame");
+		var strs = ["W+S to swap genders\nA+D to change color","Make You..."];
+		var win = windows.newSimple(strs);
+	}else if(game.gamestate == 'pregame'){
+		if(!windows.open_window){
+			game.setGamestate("game");
+		}else {
+			windows.keyPressed('Mouse');
+		}
+	}else if(game.gamestate == 'game') {
+		if(!windows.open_window){
+			player.mousePressed(mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+		}else{
+			windows.keyPressed('Mouse');
+		}
 	}
 
 	// console.log('mouse:', mouseX, mouseY);

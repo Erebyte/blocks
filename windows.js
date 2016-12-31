@@ -230,7 +230,7 @@ Windows.prototype.newSimple = function (str, x, y, w, h, cb) {
 	h = h || height/2*0.60;
 	var win = windows.newWindow(str, x, y, w, h);
 	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'T' || key == 'E') windows.windows[win].next();
+		if (key == 'Mouse') windows.windows[win].next();
 	}, win);
 	windows.windows[win].unload = function () {
 		if(cb)cb(this);
@@ -252,8 +252,8 @@ Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 	var win = windows.newWindow(strs, x, y, longest*15+20, opt_l*40+20);
 	windows.setFlag(win,'line_select',0);
 	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'T')	windows.windows[win].close();
-		if (key == 'E')	windows.windows[win].close(true);
+		if (key == 'Mouse')	windows.windows[win].close();
+		// if (key == 'E')	windows.windows[win].close(true);
 		if (key == 'W') {
 			var val = (windows.getFlag(win,'line_select') + opt_l -1) % opt_l;
 			windows.setFlag(win,'line_select',val);

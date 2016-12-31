@@ -6,14 +6,270 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- //
 */
 
+var Grapple = function (parent) {
+	this.parent = parent;
+	this.is_out = false;
+	this.pos=createVector();
+	this.vec=createVector();
+	this.maxLen = 200;
+	this.curLen=0;
+	this.state=false;
+
+	this.state_functions = {
+		throw:function(g){
+			var grapple_ud = true;
+			var gr_h = 3;
+			g.vec = p5.Vector.sub(g._dest,g._start);
+			var gravity = createVector(0,0,-0.3);
+			var friction = g.vec.copy();
+			friction.setMag(-2);
+
+			g.vec.setMag(10);
+			g.vec.z = gr_h+(g.pos.z*-0.3);
+			g._ud_function = function () {
+				g.is_sliding = false;
+				if(grapple_ud) {
+					if(p5.Vector.angleBetween(g.vec,friction)<=1 && g.pos.z<=0) grapple_ud=false;
+					var g_vec = p5.Vector.sub(g.pos,createVector(g.parent.x,g.parent.y));
+					var g_len = g_vec.mag();
+					g_vec.normalize();
+					if(g_len>g.maxLen && g.cooldown<=0){
+						g.state_functions.bounce(g);
+					}
+					g.pos.add(g.vec);
+					g.vec.add(gravity);
+
+					if(g.pos.z<=0 ) {
+						g.pos.z=0;
+						g.vec.add(friction);
+						g.is_sliding = true;
+					}
+				}
+			};
+		},
+		retract:function(g, cb){
+			var pos;
+			var gr_h = 10;
+			var c = 0;
+			g._ud_function = function () {
+				if(cb)cb();
+				pos = g.pos;
+				var dis = dist(g.parent.x,g.parent.y,pos.x,pos.y);
+				g.vec = createVector(g.parent.x-pos.x,g.parent.y-pos.y,0);
+				// vec = createVector(0,0,0);
+				g.vec.limit(20);
+				g.vec.z = gr_h-(c*(c/3));
+				c++;
+				g.pos.add(g.vec);
+				if(g.pos.z<=0){
+					g.pos.z=0;
+				}
+				if(dis<=10){
+					g._ud_function=null;
+					g.is_out = false;
+				}
+			};
+		},
+		pull:function(g){
+			console.log('pulling player');
+			var vec = p5.Vector.sub(g.pos,createVector(g.parent.x,g.parent.y));
+			vec.mult(0.07);
+			vec.limit(10);
+			vec.z = 7;
+
+			g.parent.flags._move_vector = vec;
+			g._ud_function = function () {
+				if(dist(g.pos.x,g.pos.y,g.parent.x,g.parent.y)<=100){
+					g.state_functions.retract(g);
+				}
+			};
+		},
+		throw_obj:function(g, obj){
+			console.log('throwing obj');
+			g.cooldown = 5;
+			// obj.flags._move_vector = p5.Vector.sub(createVector(g.parent.x,g.parent.y),g.pos);
+			// obj.flags._move_vector.setMag(2);
+
+			g.state_functions.retract(g, function(){
+				obj.x = g.pos.x;
+				obj.y = g.pos.y;
+				obj.z = g.pos.z;
+				obj.flags._move_vector = g.vec.copy();
+				obj.flags._move_vector.z-=2;
+			});
+		},
+		lock:function(g, obj){
+			g.state = true;
+			g.target_obj = obj;
+			var self = this;
+			var pos = g.pos;
+			g.vec = p5.Vector.sub(pos, createVector(player.x,player.y));
+			g.vec.limit(10);
+			g._ud_function = function () {
+				pos = g.pos;
+				if(dist(pos.x,pos.y,obj.x,obj.y)>0.5){
+					var d = p5.Vector.sub(createVector(obj.x,obj.y),pos);
+					d.limit(7);
+					g.vec.mult(0.6);
+					g.vec.add(d);
+					g.pos.add(g.vec);
+				}else {
+					g._ud_function=null;
+				}
+			};
+		},
+		bounce:function(g){
+			var g_vec = p5.Vector.sub(createVector(g.parent.x,g.parent.y),g.pos);
+			g_vec.normalize();
+			var s = g.vec.mag()*0.25;
+			g.vec.x=g_vec.x*s;
+			g.vec.y=g_vec.y*s;
+		}
+	};
+};
+Grapple.prototype.draw_debug = function () {
+	if(this.is_out) {
+		push();
+		translate(width/2-camera.x, height/2-camera.y);
+		var start = this._start;
+		var dest = this._dest;
+		var pos = this.pos;
+		noFill();
+		stroke(255,0,0);
+		ellipse(this.parent.x,this.parent.y,this.maxLen*2,this.maxLen*2);
+		line(start.x,start.y,dest.x,dest.y);
+		line(pos.x,pos.y,pos.x,pos.y-pos.z);
+		stroke(0,0,255);
+		line(this.parent.x,this.parent.y,pos.x,pos.y-pos.z);
+		pop();
+	}
+};
+Grapple.prototype.grapple = function (mx,my) {
+	if (this.is_out) {
+		this._start = createVector(this.pos.x,this.pos.y);
+		this.pos = createVector(this.pos.x,this.pos.y,this.pos.z);
+	}else {
+		this.is_out = true;
+		this._start = createVector(this.parent.x,this.parent.y);
+		this.pos = createVector(this.parent.x,this.parent.y,0);
+	}
+	this._dest = createVector(mx,my);
+	this.state_functions.throw(this);
+	this.state = false;
+	this.target_obj = null;
+	this.cooldown = 3;
+};
+Grapple.prototype.retract = function (delta) {
+	console.log(delta);
+	if (this.is_out) {
+		if (delta >= 300 && this.cooldown<=0) {
+			if (!this.state) {
+				this.state_functions.retract(this);
+			}else {
+				var e = this.target_obj;
+				if(e.flags.throwable !== true) {
+					this.state_functions.pull(this);
+				}else {
+					this.state_functions.throw_obj(this,e);
+				}
+				// this.state_functions.retract(this);
+				// console.log('pull?');
+				// var self = this;
+				// var pos;
+				// var plr_h = 10;
+				// this.flags['grapple_state']=false;
+				// this.flags['grapple_cooldown'] = 5;
+				// this.flags['grapple_update']=function () {
+				// 	pos = self.flags['grapple_pos'];
+				// 	vec = createVector(pos.x-self.x,pos.y-self.y,0);
+				// 	vec.setMag(10);
+				// 	if (plr_h>0)vec.z = plr_h--;
+
+				// 	if(dist(self.x,self.y,pos.x,pos.y)<=10){
+				// 		self.flags['do_grapple']=false;
+				// 	}else if(dist(self.x,self.y,pos.x,pos.y)<=50){
+				// 		self.flags['grapple_state'] = false;
+				// 		self.flags['grapple_obj'] = null;
+				// 		self.flags['grapple_cooldown'] = 5;
+				// 		var v = createVector(self.x-pos.x,self.y-pos.y,self.z-pos.z);
+				// 		v.limit(10);
+				// 		self.flags['grapple_pos'].add(v);
+				// 	}else {
+				// 		self.x += vec.x;
+				// 		self.y += vec.y;
+				// 		self.z += vec.z;
+				// 		if(self.z<0)self.z=0;
+				// 	}
+				// };
+			}
+
+		}
+	}
+};
+Grapple.prototype.update = function () {
+	if(this.is_out) {
+		if(this._ud_function)this._ud_function();
+		this.cooldown--;
+
+		var pos;
+		var gvec;
+		if(!this.state) {
+
+			var self = this;
+			pos = this.pos;
+			var hits = [];
+			var do_hit = function (e) {
+				var hit_type;
+				if(pos.z>0) {
+					hit_type='air';
+				}else if (pos.z === 0 && self.is_sliding) {
+					hit_type = 'slide';
+				}else if (pos.z === 0) {
+					hit_type='ground';
+				}
+				if(e.grapple)e.grapple(hit_type);
+				console.log('hit: '+hit_type,e.x,e.y);
+
+			};
+			for (var i = entities.length - 1; i >= 0; i--) {
+				var e = entities[i];
+				if(dist(e.x,e.y,pos.x,pos.y)<10+(e.w||10))hits.push(e);
+			}
+			for (i = hits.length - 1; i >= 0; i--) {
+				do_hit(hits[i]);
+				if(this.state===true)break;
+			}
+
+			gvec = createVector(pos.x-this.parent.x,pos.y-this.parent.y);
+			if(gvec.mag()>this.maxLen) {
+				gvec.limit(this.maxLen);
+				this.pos = p5.Vector.add(createVector(this.parent.x,this.parent.y),gvec);
+			}
+		}else{
+			pos = this.pos;
+			gvec = createVector(this.parent.x-pos.x,this.parent.y-pos.y);
+			if(gvec.mag()>this.maxLen) {
+				gvec.limit(this.maxLen);
+				var vec = p5.Vector.add(pos,gvec);
+				this.parent.x = vec.x;
+				this.parent.y = vec.y;
+			}
+		}
+	}
+};
+
+
 
 // -=-=-=-=- Player -=-=-=- //
 //
 var Player = function () {
+	GameEntity.call(this, {});
+
 	this.player_name = "tommosfool";
 
 	this.x = 100;
 	this.y = 100;
+	this.z = 0;
 	this.w = 20;
 	this.h = 40;
 	this.gender = 'male';
@@ -22,136 +278,67 @@ var Player = function () {
 	this.color_b = 100;
 
 	this.party_members = [];
+	this.grapple = new Grapple(this);
 
 	this.flags = {
-		'noclip' : false
+		'noclip' : false,
+		'gravity':true,
+		'friction':true
 	};
 	this.attribs = {
 		"health" : 20,
-		"speed" : 3,
-		"grapple_len" : 200
+		"speed" : 3
 	};
 	this.path = [];
 
 	this._debug = false;
 };
+Player.prototype = Object.create(GameEntity.prototype);
 
 // -=-  Player Functions -=- //
 Player.prototype.draw = function () {
 	colorMode(HSB, 360, 100, 100);
 	fill(this.color_h, this.color_s, this.color_b);
-	rect(this.x-this.w/2, this.y-this.h, this.w, this.h);
+	rect(this.x-this.w/2, this.y-this.h-this.z, this.w, this.h);
 	colorMode(RGB, 255);
 	if (this.flags['check'] === true) {
 		fill(255);
-		ellipse(this.x-this.w/2, this.y-this.h, this.w, this.w);
+		ellipse(this.x-this.w/2, this.y-this.h-this.z, this.w, this.w);
 	}
-	if (this.flags['do_grapple']) {
-		var pos = this.flags['grapple_pos'];
+	if (this.grapple.is_out) {
+		var pos = this.grapple.pos;
 		fill(200);
-		line(pos.x,pos.y-pos.z,this.x,this.y-10);
+		line(pos.x,pos.y-pos.z,this.x,this.y-10-this.z);
 		ellipse(pos.x,pos.y-pos.z,5,5);
 	}
 };
 Player.prototype.keyPressed = function (key) {
-	if (key == 'T' && this.flags['check']) {
-		this.flags['checking'].check();
-	}
+	
 };
 Player.prototype.mouseWheel = function (delta) {
-	console.log(delta);
-	if (this.flags['do_grapple']) {
-		if (delta >= 300) {
-			var self = this;
-			var pos;
-			var gr_h = 10;
-			var c = 0;
-			this.flags['grapple_update'] = function () {
-				pos = self.flags['grapple_pos'];
-				vec = createVector(self.x-pos.x,self.y-pos.y,0);
-				// vec = createVector(0,0,0);
-				vec.limit(20);
-				vec.z = gr_h-(c*(c/3));
-				c++;
-				self.flags['grapple_pos'].add(vec);
-				if(self.flags['grapple_pos'].z<=0){
-					self.flags['grapple_pos'].z=0;
-				}
-				if(dist(self.x,self.y,pos.x,pos.y)<=10){
-					self.flags['do_grapple'] = false;
-				}
-			};
-
-		}else {
-
-		}
-	}
+	this.grapple.retract(delta);
 };
 Player.prototype.mousePressed = function (mx,my) {
-	var zoff = 0;
-	if (this.flags['do_grapple']===true) {
-		var p = this.flags['grapple_pos'];
-		zoff = p.z*-0.3;
-		this.flags['grapple_click_start'] = createVector(p.x,p.y);
-		this.flags['grapple_pos'] = createVector(p.x,p.y,p.z);
+	if (this.flags['check']) {
+		this.flags['checking'].check();
 	}else {
-		this.flags['do_grapple'] = true;
-		this.flags['grapple_click_start'] = createVector(this.x,this.y);
-		this.flags['grapple_pos'] = createVector(this.x,this.y,0);
+		this.grapple.grapple(mx,my);
 	}
-	this.flags['grapple_click_dest'] = createVector(mx,my);
-	var self = this;
-	var grapple_ud = true;
-	var gr_h = 3;
-	var vec = p5.Vector.sub(this.flags['grapple_click_dest'],this.flags['grapple_click_start']);
-	var gravity = createVector(0,0,-0.3);
-	var friction = vec.copy();
-	friction.setMag(-2);
-	vec.setMag(10);
-	vec.z = gr_h+zoff;
-	this.flags['grapple_update'] = function () {
-		if(p5.Vector.angleBetween(vec,friction)<=1 && self.flags['grapple_pos'].z<=0) grapple_ud=false;
-		if(grapple_ud) {
-			var g_vec = p5.Vector.sub(self.flags['grapple_pos'],createVector(self.x,self.y));
-			var g_len = g_vec.mag();
-			g_vec.normalize();
-			if(g_len>self.attribs['grapple_len']){
-				var s = vec.mag()*0.25;
-				vec.x=-g_vec.x*s;
-				vec.y=-g_vec.y*s;
-			}
-			self.flags['grapple_pos'].add(vec);
-			vec.add(gravity);
-			if(self.flags['grapple_pos'].z<=0 ) {
-				self.flags['grapple_pos'].z=0;
-				vec.add(friction);
-			}
-		}
-	};
 };
 Player.prototype.draw_debug = function () {
-	if(this.flags['do_grapple']) {
-		push();
-		translate(width/2-camera.x, height/2-camera.y);
-		var start = this.flags['grapple_click_start'];
-		var dest = this.flags['grapple_click_dest'];
-		var pos = this.flags['grapple_pos'];
-		noFill();
-		stroke(255,0,0);
-		ellipse(this.x,this.y,this.attribs['grapple_len']*2,this.attribs['grapple_len']*2);
-		line(start.x,start.y,dest.x,dest.y);
-		line(pos.x,pos.y,pos.x,pos.y-pos.z);
-		stroke(0,0,255);
-		line(this.x,this.y,pos.x,pos.y-pos.z);
-		pop();
-	}
+	this.grapple.draw_debug();
 };
 Player.prototype.toggleDebug = function () {
 	this._debug = !this._debug;
 };
 Player.prototype.update = function () {
 	if(!windows.open_window) {
-		if(this.flags['grapple_update'])this.flags['grapple_update']();
+		this.grapple.update();
+
+		// if(this.z>0){
+		// 	this.z -= 5;
+		// 	if (this.z <= 0)this.z=0;
+		// }
 
 		var mx = 0;
 		var my = 0;
@@ -207,7 +394,9 @@ Player.prototype.update = function () {
 			mem.flags['move_cb'] = null;
 		}
 	}
+	this._update();
 };
+
 Player.prototype.collide = function (vec) {
 	var ret = false;
 	var mv;
