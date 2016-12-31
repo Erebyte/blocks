@@ -72,7 +72,17 @@ var Grapple = function (parent) {
 		},
 		pull:function(g){
 			console.log('pulling player');
-			g.state_functions.retract(g);
+			var vec = p5.Vector.sub(g.pos,createVector(g.parent.x,g.parent.y));
+			vec.mult(0.07);
+			vec.limit(10);
+			vec.z = 7;
+
+			g.parent.flags._move_vector = vec;
+			g._ud_function = function () {
+				if(dist(g.pos.x,g.pos.y,g.parent.x,g.parent.y)<=100){
+					g.state_functions.retract(g);
+				}
+			};
 		},
 		throw_obj:function(g, obj){
 			console.log('throwing obj');
@@ -253,6 +263,8 @@ Grapple.prototype.update = function () {
 // -=-=-=-=- Player -=-=-=- //
 //
 var Player = function () {
+	GameEntity.call(this, {});
+
 	this.player_name = "tommosfool";
 
 	this.x = 100;
@@ -269,7 +281,9 @@ var Player = function () {
 	this.grapple = new Grapple(this);
 
 	this.flags = {
-		'noclip' : false
+		'noclip' : false,
+		'gravity':true,
+		'friction':true
 	};
 	this.attribs = {
 		"health" : 20,
@@ -279,6 +293,7 @@ var Player = function () {
 
 	this._debug = false;
 };
+Player.prototype = Object.create(GameEntity.prototype);
 
 // -=-  Player Functions -=- //
 Player.prototype.draw = function () {
@@ -379,6 +394,7 @@ Player.prototype.update = function () {
 			mem.flags['move_cb'] = null;
 		}
 	}
+	this._update();
 };
 
 Player.prototype.collide = function (vec) {

@@ -7,7 +7,7 @@
 */
 
 // Globals and Constants //
-var VERSION = 'pra-alpha: v0.5.2'; // version.release.patch
+var VERSION = 'pra-alpha: v0.5.4'; // version.release.patch
 var game;
 var player;
 var windows;
@@ -35,6 +35,8 @@ function setup () {
 	// Test //
 
 	entities.push(new Post(createVector(200,400)));
+	entities.push(new Post(createVector(200,600)));
+	entities.push(new Post(createVector(200,800)));
 	entities.push(new Post(createVector(250,400)));
 
 	entities.push(new Rockcrab(createVector(300,500)));

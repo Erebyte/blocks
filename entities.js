@@ -269,8 +269,10 @@ var Rockcrab = function (pos) {
 	this.flags.friction = true;
 
 	this.attribs = Object.assign({
-			'speed':2
+			'speed':0.5
 		}, this.attribs);
+
+	this.close_r = random(200,300);
 	// this.sway = random(-5,5);
 	// this.sway = -5;
 	// this.h = random(20,30);
@@ -286,10 +288,15 @@ Rockcrab.prototype.draw = function () {
 };
 Rockcrab.prototype.update = function () {
 	var dest = this.AI.getPathDestination();
-	if(dist(dest[0],dest[1],player.x,player.y)>300)this.AI.pathPush([player.x,player.y]);
-	if(dist(this.x,this.y,player.x,player.y)<100)this.AI.clearPath();
 	var vec = this.AI.movePathVector();
-	if(vec)this.move(vec.x, vec.y);
+	var dis = dist(this.x,this.y,player.x,player.y);
+	if(dis<this.close_r && random()<0.03){
+		this.AI.clearPath();
+	}else if(!vec && random()<=0.005*(dis*0.005)){
+		this.AI.pathPush([player.x,player.y]);
+	}else if(vec){
+		this.move(vec.x, vec.y);
+	}
 	this._update();
 };
 Rockcrab.prototype.grapple = function (state) {
