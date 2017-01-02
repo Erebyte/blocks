@@ -101,6 +101,7 @@ Windows.prototype.draw = function () {
 	this.open_window = false;
 	for (var i = this.windows.length - 1; i >= 0; i--) {
 		var win = this.windows[i];
+		if(win!== null && win.flags.draw_func)win.flags.draw_func(win);
 		if (win !== null && win.flags['draw']===true) {
 			this.open_window = true;
 			push();
@@ -140,8 +141,8 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 	var win = {
 		x:x,
 		y:y,
-		w:w,
-		h:h,
+		w:w||1,
+		h:h||1,
 		fr:0,
 		br:0,
 		strs:strs,
@@ -218,6 +219,7 @@ Windows.prototype.animate = function () {
 	for (var i = this.windows.length - 1; i >= 0; i--) {
 		if (this.windows[i]) {
 			this.windows[i].anm();
+			if(this.windows[i].ud)this.windows[i].ud();
 		}
 	}
 };
@@ -242,37 +244,41 @@ Windows.prototype.newYesNo = function (x, y, cb) {
 	return this.newSelector(x, y, ['Yes', 'No'], cb);
 };
 Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
-	if(do_close==null)do_close=true;
-	var opt_l = opts.length;
-	var longest = 0;
-	for (var i = opts.length - 1; i >= 0; i--) {
-		if(opts[i].length>longest)longest=opts[i].length;
-	}
-	var strs = [opts.join('\n')];
-	var win = windows.newWindow(strs, x, y, longest*15+20, opt_l*40+20);
-	windows.setFlag(win,'line_select',0);
+	// if(do_close==null)do_close=true;
+	// var opt_l = opts.length;
+	// var longest = 0;
+	// for (var i = opts.length - 1; i >= 0; i--) {
+	// 	if(opts[i].length>longest)longest=opts[i].length;
+	// }
+	// var strs = [opts.join('\n')];
+	var win_id = windows.newWindow([], x, y);
+	windows.setFlag(win_id,'draw',false);
+	windows.setFlag(win_id,'draw_func',function(win){
+		push();
+		stroke(255,0,0);
+		line(win.x-10,win.y,win.x+10,win.y);
+		line(win.x,win.y-10,win.x,win.y+10);
+		stroke(0,0,255);
+		line(win.x,win.y,win.x+win.dx,win.y+win.dy);
+		pop();
+	});
+	windows.windows[win_id].ud = function () {
+		this.dx = mouseX - pmouseX;
+		this.dy = mouseY - pmouseY;
+		// console.log('win',this);
+	};
 	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'Mouse')	windows.windows[win].close();
-		// if (key == 'E')	windows.windows[win].close(true);
-		if (key == 'W') {
-			var val = (windows.getFlag(win,'line_select') + opt_l -1) % opt_l;
-			windows.setFlag(win,'line_select',val);
-		}
-		if (key == 'S') {
-			var val = (windows.getFlag(win,'line_select') + opt_l +1) % opt_l;
-			windows.setFlag(win,'line_select',val);
-		}
-
-	}, win);
-	windows.windows[win].close = function (k) {
-		if(cb)cb(this.flags['line_select'],k);
-		if(do_close)this.close_();
-	};
-	windows.windows[win].close_ = function () {
-		windows.kp[kp_id] = null;
-		windows.removeWindow(this.id);
-	};
-	return win;
+		if (key == 'Mouse')	windows.windows[win_id].close();
+	}, win_id);
+	// windows.windows[win].close = function (k) {
+	// 	if(cb)cb(this.flags['line_select'],k);
+	// 	if(do_close)this.close_();
+	// };
+	// windows.windows[win].close_ = function () {
+	// 	windows.kp[kp_id] = null;
+	// 	windows.removeWindow(this.id);
+	// };
+	return win_id;
 };
 
 
