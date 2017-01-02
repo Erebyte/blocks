@@ -12,6 +12,7 @@ var Grapple = function (parent) {
 	this.pos=createVector();
 	this.vec=createVector();
 	this.maxLen = 200;
+	this.tension=0;
 	this.curLen=0;
 	this.state=false;
 
@@ -87,16 +88,17 @@ var Grapple = function (parent) {
 		throw_obj:function(g, obj){
 			console.log('throwing obj');
 			g.cooldown = 5;
-			// obj.flags._move_vector = p5.Vector.sub(createVector(g.parent.x,g.parent.y),g.pos);
-			// obj.flags._move_vector.setMag(2);
-
-			g.state_functions.retract(g, function(){
-				obj.x = g.pos.x;
-				obj.y = g.pos.y;
-				obj.z = g.pos.z;
-				obj.flags._move_vector = g.vec.copy();
-				obj.flags._move_vector.z-=2;
-			});
+			if(dist(g.parent.x,g.parent.y,obj.x,obj.y)>=50){
+				g.state_functions.retract(g, function(){
+					obj.x = g.pos.x;
+					obj.y = g.pos.y;
+					obj.z = g.pos.z;
+					obj.flags._move_vector = g.vec.copy();
+					obj.flags._move_vector.z-=2;
+				});
+			}else {
+				g.state_functions.retract(g);
+			}
 		},
 		lock:function(g, obj){
 			g.state = true;
@@ -114,6 +116,7 @@ var Grapple = function (parent) {
 					g.vec.add(d);
 					g.pos.add(g.vec);
 				}else {
+					g.tension = g.maxLen-dist(pos.x,pos.y,g.parent.x,g.parent.y);
 					g._ud_function=null;
 				}
 			};
@@ -128,21 +131,22 @@ var Grapple = function (parent) {
 	};
 };
 Grapple.prototype.draw_debug = function () {
+	push();
+	translate(width/2-camera.x, height/2-camera.y);
+	var d = (this.maxLen-this.tension)*2;
+	noFill();
+	stroke(255,0,0);
+	ellipse(this.parent.x,this.parent.y,d,d);
 	if(this.is_out) {
-		push();
-		translate(width/2-camera.x, height/2-camera.y);
 		var start = this._start;
 		var dest = this._dest;
 		var pos = this.pos;
-		noFill();
-		stroke(255,0,0);
-		ellipse(this.parent.x,this.parent.y,this.maxLen*2,this.maxLen*2);
 		line(start.x,start.y,dest.x,dest.y);
 		line(pos.x,pos.y,pos.x,pos.y-pos.z);
 		stroke(0,0,255);
 		line(this.parent.x,this.parent.y,pos.x,pos.y-pos.z);
-		pop();
 	}
+	pop();
 };
 Grapple.prototype.grapple = function (mx,my) {
 	if (this.is_out) {
@@ -157,12 +161,12 @@ Grapple.prototype.grapple = function (mx,my) {
 	this.state_functions.throw(this);
 	this.state = false;
 	this.target_obj = null;
+	this.tension = 0;
 	this.cooldown = 3;
 };
 Grapple.prototype.retract = function (delta) {
-	console.log(delta);
 	if (this.is_out) {
-		if (delta >= 300 && this.cooldown<=0) {
+		if (delta >= 200 && this.cooldown<=0) {
 			if (!this.state) {
 				this.state_functions.retract(this);
 			}else {
@@ -172,37 +176,10 @@ Grapple.prototype.retract = function (delta) {
 				}else {
 					this.state_functions.throw_obj(this,e);
 				}
-				// this.state_functions.retract(this);
-				// console.log('pull?');
-				// var self = this;
-				// var pos;
-				// var plr_h = 10;
-				// this.flags['grapple_state']=false;
-				// this.flags['grapple_cooldown'] = 5;
-				// this.flags['grapple_update']=function () {
-				// 	pos = self.flags['grapple_pos'];
-				// 	vec = createVector(pos.x-self.x,pos.y-self.y,0);
-				// 	vec.setMag(10);
-				// 	if (plr_h>0)vec.z = plr_h--;
-
-				// 	if(dist(self.x,self.y,pos.x,pos.y)<=10){
-				// 		self.flags['do_grapple']=false;
-				// 	}else if(dist(self.x,self.y,pos.x,pos.y)<=50){
-				// 		self.flags['grapple_state'] = false;
-				// 		self.flags['grapple_obj'] = null;
-				// 		self.flags['grapple_cooldown'] = 5;
-				// 		var v = createVector(self.x-pos.x,self.y-pos.y,self.z-pos.z);
-				// 		v.limit(10);
-				// 		self.flags['grapple_pos'].add(v);
-				// 	}else {
-				// 		self.x += vec.x;
-				// 		self.y += vec.y;
-				// 		self.z += vec.z;
-				// 		if(self.z<0)self.z=0;
-				// 	}
-				// };
 			}
-
+		}else if(delta > 0 && this.cooldown<=0 && this.state){
+			if(!this.target_obj.flags.throwable)this.tension += delta*0.2;
+			if(this.tension >= this.maxLen-50)this.state_functions.retract(this);
 		}
 	}
 };
@@ -241,18 +218,26 @@ Grapple.prototype.update = function () {
 			}
 
 			gvec = createVector(pos.x-this.parent.x,pos.y-this.parent.y);
-			if(gvec.mag()>this.maxLen) {
-				gvec.limit(this.maxLen);
+			if(gvec.mag()>this.maxLen-this.tension) {
+				gvec.limit(this.maxLen-this.tension);
 				this.pos = p5.Vector.add(createVector(this.parent.x,this.parent.y),gvec);
 			}
 		}else{
-			pos = this.pos;
-			gvec = createVector(this.parent.x-pos.x,this.parent.y-pos.y);
-			if(gvec.mag()>this.maxLen) {
-				gvec.limit(this.maxLen);
-				var vec = p5.Vector.add(pos,gvec);
-				this.parent.x = vec.x;
-				this.parent.y = vec.y;
+			gvec = createVector(this.parent.x-this.pos.x,this.parent.y-this.pos.y);
+			if(gvec.mag()>this.maxLen-this.tension) {
+				if(!this.target_obj.flags.throwable){
+					gvec.limit(this.maxLen-this.tension);
+					var vec = p5.Vector.add(this.pos,gvec);
+					this.parent.x = vec.x;
+					this.parent.y = vec.y;
+				}else {
+					gvec.mult(-1);
+					gvec.limit(this.maxLen-this.tension);
+					this.pos = p5.Vector.add(createVector(this.parent.x,this.parent.y),gvec);
+					this.target_obj.x = this.pos.x;
+					this.target_obj.y = this.pos.y;
+					this.target_obj.z = this.pos.z;
+				}
 			}
 		}
 	}

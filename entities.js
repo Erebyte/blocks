@@ -186,10 +186,8 @@ Rat.prototype = Object.create(GameEntity.prototype);
 
 // -=- functions -=- //
 Rat.prototype.move = function (x, y) {
-	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
-	this.x += x*spd;
-	this.y += y*spd;
-
+	this._move(x,y);
+	
 	//draw stuff
 	this.path_history.push([this.x,this.y]);
 	this.facing_dir = createVector(x,y);

@@ -129,6 +129,9 @@ var GameEntity = function (entity_data) {
 GameEntity.prototype = Object.create(GameObject.prototype);
 
 // -=- Game Entity Functions -=- //
+GameEntity.prototype.getPosition = function () {
+	return createVector(this.x,this.y,this.z);
+};
 GameEntity.prototype.setAttribute = function (attr, value) {
 	this.attribs[attr] = value;
 };
@@ -163,11 +166,13 @@ GameEntity.prototype._update = function () {
 	}
 };
 GameEntity.prototype.update = GameEntity.prototype._update;
-GameEntity.prototype.move = function (x, y) {
+GameEntity.prototype._move = function (x, y) {
 	var spd = (this.attribs['speed'] || 0) + (this.flags['spd_buf'] || 0);
 	this.x += x*spd;
 	this.y += y*spd;
+	if(player.grapple.target_obj == this)player.grapple.pos = this.getPosition();
 };
+GameEntity.prototype.move = GameEntity.prototype._move;
 
 
 // -=- AI -=- //
