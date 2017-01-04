@@ -121,12 +121,7 @@ Windows.prototype.draw = function () {
 			textAlign(LEFT);
 			textFont("Georgia");
 			textSize(24);
-			if (win.flags['line_select']<0) {
-				text(win.str, 0, 0, win.w*0.8, win.h*0.7);
-			}else {
-				text(win.str, 0, 0, win.w*0.8, win.h*0.7);
-				ellipse(-win.w/2,-win.h*0.35+win.flags['line_select']*30+15, 10, 10);
-			}
+			text(win.str, 0, 0, win.w*0.8, win.h*0.7);
 			pop();
 		}
 	}
@@ -151,7 +146,8 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 		id:id,
 		flags:{
 			'draw':true,
-			'line_select':-1
+			'draw_func':null,
+			'selection':-1
 		},
 		next:function(i){
 			this.str_i += i || 1;
@@ -251,33 +247,64 @@ Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 	// 	if(opts[i].length>longest)longest=opts[i].length;
 	// }
 	// var strs = [opts.join('\n')];
-	var win_id = windows.newWindow([], x, y);
+	var win_id = windows.newWindow(opts, x, y);
 	windows.setFlag(win_id,'draw',false);
+	windows.windows[win_id].sel_point = createVector();
 	windows.setFlag(win_id,'draw_func',function(win){
 		push();
+		for (var i = opts.length - 1; i >= 0; i--) {
+			var v = p5.Vector.fromAngle(i*(2*PI/opts.length)+(2*PI/opts.length)/2);
+			v.mult(30);
+			stroke(255);
+			line(win.x,win.y,win.x+v.x,win.y+v.y);
+		}
+
+		// debug
 		stroke(255,0,0);
 		line(win.x-10,win.y,win.x+10,win.y);
 		line(win.x,win.y-10,win.x,win.y+10);
 		stroke(0,0,255);
-		line(win.x,win.y,win.x+win.dx,win.y+win.dy);
+		line(win.x,win.y,win.x-win.sel_point.x,win.y-win.sel_point.y);
+
+		fill(200);
+		text(win.flags.selection,win.x,win.y);
+		text(win.strs[win.flags.selection] || 'default',win.x+20,win.y);
+		//
 		pop();
 	});
 	windows.windows[win_id].ud = function () {
-		this.dx = mouseX - pmouseX;
-		this.dy = mouseY - pmouseY;
+		// pointer
+		var dx = mouseX - pmouseX;
+		var dy = mouseY - pmouseY;
+		var vec = this.sel_point.copy();
+		vec.limit(2);
+		//note: sel_point is inverted
+		this.sel_point.sub(dx,dy);
+		this.sel_point.sub(vec);
+		this.sel_point.limit(100);
+
+		//selection
+		for (var i = opts.length-1; i >= 0; i--) {
+			var c = i*(2*PI/opts.length)+(2*PI/opts.length)/2;
+			var n = (i+1)*(2*PI/opts.length)+(2*PI/opts.length)/2;
+			var a = this.sel_point.heading()+PI;
+			if(c<=a && a<=n)this.flags['selection']=(i-1+opts.length)%opts.length;
+		}
+
+		if(this.sel_point.x === 0 && this.sel_point.y === 0 && this.flags.selection != -1)this.flags.selection = -1;
 		// console.log('win',this);
 	};
 	var kp_id = windows.newKeyPress(function (key) {
 		if (key == 'Mouse')	windows.windows[win_id].close();
 	}, win_id);
-	// windows.windows[win].close = function (k) {
-	// 	if(cb)cb(this.flags['line_select'],k);
-	// 	if(do_close)this.close_();
-	// };
-	// windows.windows[win].close_ = function () {
-	// 	windows.kp[kp_id] = null;
-	// 	windows.removeWindow(this.id);
-	// };
+	windows.windows[win_id].close = function (k) {
+		if(cb)cb(this.flags['selection'],k);
+		if(do_close)this.close_();
+	};
+	windows.windows[win_id].close_ = function () {
+		windows.kp[kp_id] = null;
+		windows.removeWindow(this.id);
+	};
 	return win_id;
 };
 
@@ -295,39 +322,43 @@ GameMenu.prototype.open = function () {
 
 	var opts = ['Party','Items','Options','Exit'];
 	var sel = windows.newSelector(width*0.15,height/2,opts,function (i,k) {
-		if(k)i=opts.length-1;
+		if(k || i==-1)i=opts.length-1;
 		var sel_kp = windows.windows[sel].kp_id;
 		var kp = windows.kp[sel_kp];
 		windows.kp[sel_kp] = null;
 		switch (i) {
 			case 0: //party
 				windows.newSimple(['temp party win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-					windows.newKeyPress(kp,sel);
+						windows.newKeyPress(kp,sel);
 				});
 				break;
 			case 1: //items
 				windows.newSimple(['temp items win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-					windows.newKeyPress(kp,sel);
+						windows.newKeyPress(kp,sel);
 				});
 				break;
 			case 2: //options
 				var opt_opts = ["Debug","Credits","Exit"];
-				windows.newSelector(width*0.4,height/2,opt_opts,function(oi,ok){
-					if(ok)oi=opt_opts.length-1;
+				var opts_sel = windows.newSelector(width*0.4,height/2,opt_opts,function(oi,ok){
+					if(ok || oi==-1)oi=opt_opts.length-1;
+					var opts_sel_kp = windows.windows[opts_sel].kp_id;
+					var opts_kp = windows.kp[opts_sel_kp];
+					windows.kp[opts_sel_kp] = null;
 					switch (oi) {
 						case 0: //debug options
 							var str = 'To toggle debug press:\n  "1" for general\n  "2" for terrain\n  "3" for player';
 							windows.newSimple([str],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-								windows.newKeyPress(kp,sel);
+									windows.newKeyPress(opts_kp,opts_sel);
 							});
 							break;
 						case 1: //credits
 							windows.newSimple(['tmp credits win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-								windows.newKeyPress(kp,sel);
+									windows.newKeyPress(opts_kp,opts_sel);
 							});
 							break;
 						case 2: //exit
 							windows.newKeyPress(kp,sel);
+							windows.windows[opts_sel].close_();
 							break;
 					}
 				});
