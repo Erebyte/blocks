@@ -12,6 +12,7 @@ var Grapple = function (parent) {
 	this.pos=createVector();
 	this.vec=createVector();
 	this.maxLen = 200;
+	this.minLen = 50;
 	this.tension=0;
 	this.curLen=0;
 	this.state=false;
@@ -116,7 +117,7 @@ var Grapple = function (parent) {
 					g.vec.add(d);
 					g.pos.add(g.vec);
 				}else {
-					g.tension = g.maxLen-dist(pos.x,pos.y,g.parent.x,g.parent.y);
+					g.tension = g.maxLen-max([g.minLen,dist(pos.x,pos.y,g.parent.x,g.parent.y)]);
 					g._ud_function=null;
 				}
 			};
