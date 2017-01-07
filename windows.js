@@ -42,7 +42,7 @@ var Windows = function () {
 			
 			windows.newYesNo(width/2, height/2, function (i,k) {
 				win.close();
-				if (k === true) i = def; // continue
+				if (k === true || i==-1) i = def; // continue
 				if (case_[i]) {
 					var ret = case_[i];
 					// console.log(ret);
@@ -66,8 +66,6 @@ var Windows = function () {
 					console.log('else case');
 					// windows.newSimple(case_[i]);
 				}
-				// console.log(k, i);
-				// console.log(def, case_);
 			});
 		},
 		movepath:function(obj, win, args) {
@@ -101,6 +99,7 @@ Windows.prototype.draw = function () {
 	this.open_window = false;
 	for (var i = this.windows.length - 1; i >= 0; i--) {
 		var win = this.windows[i];
+		if(win!== null && win.flags.draw_func)win.flags.draw_func(win);
 		if (win !== null && win.flags['draw']===true) {
 			this.open_window = true;
 			push();
@@ -120,12 +119,7 @@ Windows.prototype.draw = function () {
 			textAlign(LEFT);
 			textFont("Georgia");
 			textSize(24);
-			if (win.flags['line_select']<0) {
-				text(win.str, 0, 0, win.w*0.8, win.h*0.7);
-			}else {
-				text(win.str, 0, 0, win.w*0.8, win.h*0.7);
-				ellipse(-win.w/2,-win.h*0.35+win.flags['line_select']*30+15, 10, 10);
-			}
+			text(win.str, 0, 0, win.w*0.8, win.h*0.7);
 			pop();
 		}
 	}
@@ -140,8 +134,8 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 	var win = {
 		x:x,
 		y:y,
-		w:w,
-		h:h,
+		w:w||1,
+		h:h||1,
 		fr:0,
 		br:0,
 		strs:strs,
@@ -150,7 +144,9 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 		id:id,
 		flags:{
 			'draw':true,
-			'line_select':-1
+			'draw_func':null,
+			'selection':-1,
+			'is_focused':true,
 		},
 		next:function(i){
 			this.str_i += i || 1;
@@ -187,12 +183,17 @@ Windows.prototype.newWindow = function (strs, x, y, w, h) {
 	return id;
 };
 Windows.prototype.getFlag = function (id, flag) {
-	if(!windows.windows[id])return;
+	if(!this.windows[id])return;
 	return this.windows[id].flags[flag];
 };
 Windows.prototype.setFlag = function (id, flag, value) {
-	if(!windows.windows[id])return;
+	if(!this.windows[id])return;
 	this.windows[id].flags[flag] = value;
+};
+Windows.prototype.focus = function (id, value) {
+	if(!this.windows[id])return;
+	if(value!==false)value=true;
+	this.setFlag(id,'is_focused',value);
 };
 Windows.prototype.newKeyPress = function (f, w) {
 	var id = this.kp.length;
@@ -218,6 +219,7 @@ Windows.prototype.animate = function () {
 	for (var i = this.windows.length - 1; i >= 0; i--) {
 		if (this.windows[i]) {
 			this.windows[i].anm();
+			if(this.windows[i].ud)this.windows[i].ud();
 		}
 	}
 };
@@ -242,37 +244,74 @@ Windows.prototype.newYesNo = function (x, y, cb) {
 	return this.newSelector(x, y, ['Yes', 'No'], cb);
 };
 Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
-	if(do_close==null)do_close=true;
-	var opt_l = opts.length;
-	var longest = 0;
-	for (var i = opts.length - 1; i >= 0; i--) {
-		if(opts[i].length>longest)longest=opts[i].length;
-	}
-	var strs = [opts.join('\n')];
-	var win = windows.newWindow(strs, x, y, longest*15+20, opt_l*40+20);
-	windows.setFlag(win,'line_select',0);
-	var kp_id = windows.newKeyPress(function (key) {
-		if (key == 'Mouse')	windows.windows[win].close();
-		// if (key == 'E')	windows.windows[win].close(true);
-		if (key == 'W') {
-			var val = (windows.getFlag(win,'line_select') + opt_l -1) % opt_l;
-			windows.setFlag(win,'line_select',val);
-		}
-		if (key == 'S') {
-			var val = (windows.getFlag(win,'line_select') + opt_l +1) % opt_l;
-			windows.setFlag(win,'line_select',val);
+	if(do_close!==false)do_close=true;
+	var offset = 0.01;
+	// create window
+	var win_id = windows.newWindow(opts, x, y);
+	windows.windows[win_id].sel_point = createVector();
+
+	// override draw
+	windows.setFlag(win_id,'draw',false);
+	windows.setFlag(win_id,'draw_func',function(win){
+		push();
+		offset+=0.02;
+		for (var i = opts.length - 1; i >= 0; i--) {
+			var v = p5.Vector.fromAngle((i*(2*PI/opts.length)+PI+(2*PI/opts.length)/2)+map(noise(offset*0.1+1000+i*1000),0,1,-0.5,0.5));
+			v.mult(map(noise(offset+i*10000),0,1,5,40));
+			stroke(200,200,200,map(noise(offset+(i+10)*10000),0,1,5,200));
+			line(win.x,win.y,win.x+v.x,win.y+v.y);
 		}
 
-	}, win);
-	windows.windows[win].close = function (k) {
-		if(cb)cb(this.flags['line_select'],k);
+		// debug
+		// stroke(255,0,0);
+		// line(win.x-10,win.y,win.x+10,win.y);
+		// line(win.x,win.y-10,win.x,win.y+10);
+		stroke(0,0,255,100);
+		line(win.x,win.y,win.x+win.sel_point.x,win.y+win.sel_point.y);
+
+		fill(200);
+		text(win.flags.selection,win.x,win.y);
+		text(win.strs[win.flags.selection] || 'default',win.x+20,win.y);
+		//
+		pop();
+	});
+	
+	// update
+	windows.windows[win_id].ud = function () {
+		// pointer
+		var dx = (mouseX - pmouseX)*0.5;
+		var dy = (mouseY - pmouseY)*0.5;
+		var vec = this.sel_point.copy();
+		vec.limit(1);
+		if(this.flags.is_focused)this.sel_point.add(dx,dy);
+		this.sel_point.sub(vec);
+		this.sel_point.limit(100);
+
+		//selection
+		for (var i = 0; i < opts.length; i++) {
+			var c = i*(2*PI/opts.length)+(2*PI/opts.length)/2;
+			var n = (i+1)*(2*PI/opts.length)+(2*PI/opts.length)/2;
+			var a = (this.sel_point.heading()+(3*PI)+(2*PI/opts.length))%(2*PI);
+			if(c<=a && a<=n || a<=(2*PI/opts.length)/2 )this.flags['selection']=i;
+		}
+
+		if(this.sel_point.x === 0 && this.sel_point.y === 0 && this.flags.selection != -1)this.flags.selection = -1;
+		// console.log('win',this);
+	};
+	
+	// cleanup
+	var kp_id = windows.newKeyPress(function (key) {
+		if (key == 'Mouse')	windows.windows[win_id].close();
+	}, win_id);
+	windows.windows[win_id].close = function (k) {
+		if(cb)cb(this.flags['selection'],k);
 		if(do_close)this.close_();
 	};
-	windows.windows[win].close_ = function () {
+	windows.windows[win_id].close_ = function () {
 		windows.kp[kp_id] = null;
 		windows.removeWindow(this.id);
 	};
-	return win;
+	return win_id;
 };
 
 
@@ -283,71 +322,63 @@ var GameMenu = function () {
 
 };
 GameMenu.prototype.open = function () {
+	//functions
+	function do_focus (id, kp) {
+		windows.newKeyPress(kp,id);
+		windows.focus(sel);
+	}
 	// console.log('open menu');
 	var strs = ['This is the menu,\nit is currently empty.'];
 	var win = windows.newWindow(strs, width/2, height*0.15, width*0.9, height*0.2);
 
-	var opts = ['Party','Items','Options','Exit'];
+	var opts = ['Party','Items','Options','Other','Exit'];
 	var sel = windows.newSelector(width*0.15,height/2,opts,function (i,k) {
-		if(k)i=opts.length-1;
+		if(k || i==-1)i=opts.length-1;
 		var sel_kp = windows.windows[sel].kp_id;
 		var kp = windows.kp[sel_kp];
 		windows.kp[sel_kp] = null;
+		windows.focus(sel,false);
 		switch (i) {
 			case 0: //party
 				windows.newSimple(['temp party win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-					windows.newKeyPress(kp,sel);
+						do_focus(sel,kp);
 				});
 				break;
 			case 1: //items
 				windows.newSimple(['temp items win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-					windows.newKeyPress(kp,sel);
+						do_focus(sel,kp);
 				});
 				break;
 			case 2: //options
 				var opt_opts = ["Debug","Credits","Exit"];
 				windows.newSelector(width*0.4,height/2,opt_opts,function(oi,ok){
-					if(ok)oi=opt_opts.length-1;
+					if(ok || oi==-1)oi=opt_opts.length-1;
 					switch (oi) {
 						case 0: //debug options
 							var str = 'To toggle debug press:\n  "1" for general\n  "2" for terrain\n  "3" for player';
 							windows.newSimple([str],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-								windows.newKeyPress(kp,sel);
+									do_focus(sel,kp);
 							});
 							break;
 						case 1: //credits
 							windows.newSimple(['tmp credits win'],width*0.6,height*0.6, width*0.7, height*0.6, function(){
-								windows.newKeyPress(kp,sel);
+									do_focus(sel,kp);
 							});
 							break;
 						case 2: //exit
-							windows.newKeyPress(kp,sel);
+							do_focus(sel,kp);
 							break;
 					}
 				});
 				break;
-			case 3: //exit
+			case 3: //Other
+				do_focus(sel,kp);
+				break;
+			case 4: //exit
 				windows.windows[win].close();
 				windows.windows[sel].close_();
 				break;
 		}
 		// console.log(opts[i]);
-	}, false);
+	}, false); //pass false to keep selector open
 };
-
-// if (this.flags['talking'] !== true) {
-// 		var strs = ['This is a tombstone...','It reads:\nRest In Peace\nHere lies Mike "the longest" hawk'];
-// 		var win = windows.newWindow(strs, width/2, height*0.2, width*0.9, height/2*0.60);
-// 		var kp_id = windows.newKeyPress(function (key) {
-// 			if (key == 'T') {
-// 				windows.windows[win].next();
-// 			}
-// 		});
-// 		var self = this;
-// 		windows.windows[win].unload = function () {
-// 			self.flags['talking'] = false;
-// 			windows.kp[kp_id] = null;
-// 		};
-// 		this.flags['talking'] = true;
-// 	}
-

@@ -1,0 +1,12 @@
+{
+	"conf" : {
+		"title" : "Working title: Blocks",
+		"desc" : "Game desc...",
+		"embeded" : true,
+		"enable_p5" : true
+	},
+	"scripts" : [
+		"./map_editor.js",
+		"./sketch.js"
+	]
+}

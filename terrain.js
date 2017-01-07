@@ -171,8 +171,13 @@ Terrain.prototype.toggleDebug = function () {
 Terrain.prototype.draw = function (xoff, yoff) {
 	push();
 	translate(width/2-camera.x, height/2-camera.y);
-
-	fill(30);
+	if(!this.map_data.inverted){
+		background(90);
+		fill(30);
+	}else{
+		background(30);
+		fill(90);
+	}
 	for (pi=0;pi<this.poly.length;pi++){
 		var poly = this.poly[pi];
 		beginShape();
@@ -328,6 +333,7 @@ Terrain.prototype.loadmap = function (url) {
 				var p = poly[j];
 				new_poly.push(createVector(p[0],p[1]));
 			}
+			if(json.map_data.inverted)new_poly.reverse();
 			self.poly.push(new_poly);
 		}
 		for (var i = json.npcs.length - 1; i >= 0; i--) {
