@@ -14,6 +14,7 @@
 
 # dont include index.html for games #
 index.html
+!map_editor/index.html
 
 # dont include server running code
 #run.py
