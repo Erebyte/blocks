@@ -245,6 +245,7 @@ Windows.prototype.newYesNo = function (x, y, cb) {
 };
 Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 	if(do_close!==false)do_close=true;
+	var offset = 0.01;
 	// create window
 	var win_id = windows.newWindow(opts, x, y);
 	windows.windows[win_id].sel_point = createVector();
@@ -253,18 +254,19 @@ Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 	windows.setFlag(win_id,'draw',false);
 	windows.setFlag(win_id,'draw_func',function(win){
 		push();
+		offset+=0.02;
 		for (var i = opts.length - 1; i >= 0; i--) {
-			var v = p5.Vector.fromAngle(i*(2*PI/opts.length)+PI+(2*PI/opts.length)/2);
-			v.mult(30);
-			stroke(255);
+			var v = p5.Vector.fromAngle((i*(2*PI/opts.length)+PI+(2*PI/opts.length)/2)+map(noise(offset*0.1+1000+i*1000),0,1,-0.5,0.5));
+			v.mult(map(noise(offset+i*10000),0,1,5,40));
+			stroke(200,200,200,map(noise(offset+(i+10)*10000),0,1,5,200));
 			line(win.x,win.y,win.x+v.x,win.y+v.y);
 		}
 
 		// debug
-		stroke(255,0,0);
-		line(win.x-10,win.y,win.x+10,win.y);
-		line(win.x,win.y-10,win.x,win.y+10);
-		stroke(0,0,255);
+		// stroke(255,0,0);
+		// line(win.x-10,win.y,win.x+10,win.y);
+		// line(win.x,win.y-10,win.x,win.y+10);
+		stroke(0,0,255,100);
 		line(win.x,win.y,win.x+win.sel_point.x,win.y+win.sel_point.y);
 
 		fill(200);
@@ -277,8 +279,8 @@ Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 	// update
 	windows.windows[win_id].ud = function () {
 		// pointer
-		var dx = mouseX - pmouseX;
-		var dy = mouseY - pmouseY;
+		var dx = (mouseX - pmouseX)*0.5;
+		var dy = (mouseY - pmouseY)*0.5;
 		var vec = this.sel_point.copy();
 		vec.limit(1);
 		if(this.flags.is_focused)this.sel_point.add(dx,dy);

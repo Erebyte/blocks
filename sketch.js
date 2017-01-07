@@ -30,24 +30,24 @@ function setup () {
 	windows = new Windows();
 	player = new Player();
 	terrain = new Terrain();
-	terrain.loadmap(base_url+'/maps/test.json');
+	terrain.loadmap(base_url+'/maps/cross.json');
 	camera = new Camera();
 	// Test //
 
-	entities.push(new Post(createVector(200,400)));
-	entities.push(new Post(createVector(200,600)));
-	entities.push(new Post(createVector(200,800)));
-	entities.push(new Post(createVector(250,400)));
+	// entities.push(new Post(createVector(200,400)));
+	// entities.push(new Post(createVector(200,600)));
+	// entities.push(new Post(createVector(200,800)));
+	// entities.push(new Post(createVector(250,400)));
 
-	entities.push(new Rockcrab(createVector(300,500)));
-	entities.push(new Rock(createVector(320,500)));
-	entities.push(new Rock(createVector(340,500)));
-	entities.push(new Rock(createVector(300,520)));
-	entities.push(new Rockcrab(createVector(320,520)));
-	entities.push(new Rock(createVector(340,520)));
-	entities.push(new Rock(createVector(300,540)));
-	entities.push(new Rock(createVector(320,540)));
-	entities.push(new Rockcrab(createVector(340,540)));
+	// entities.push(new Rockcrab(createVector(300,500)));
+	// entities.push(new Rock(createVector(320,500)));
+	// entities.push(new Rock(createVector(340,500)));
+	// entities.push(new Rock(createVector(300,520)));
+	// entities.push(new Rockcrab(createVector(320,520)));
+	// entities.push(new Rock(createVector(340,520)));
+	// entities.push(new Rock(createVector(300,540)));
+	// entities.push(new Rock(createVector(320,540)));
+	// entities.push(new Rockcrab(createVector(340,540)));
 
 	// entities.push(new Rat(createVector(200,500)));
 	// entities.push(new Rat(createVector(10,500)));
@@ -133,7 +133,7 @@ function draw () {
 
 		
 	}else if (game.gamestate == "game"){
-		background(90);
+		// background(90);
 		draw_q = [];
 
 		// update
@@ -153,7 +153,7 @@ function draw () {
 		blit(player,player.y);
 
 		// draw
-		terrain.draw();
+		terrain.draw();//draws background
 		push();
 		translate(width/2-camera.x, height/2-camera.y);
 		draw_blitz();
@@ -238,7 +238,7 @@ function mousePressed() { // For debug use !?!?! //
 	}
 
 	// console.log('mouse:', mouseX, mouseY);
-	// console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
+	if(game.debug_mode)console.log('abs:',mouseX + camera.x - width/2, mouseY + camera.y - height/2);
 }
 function mouseWheel(e){
 	if(game.gamestate == 'game') {
