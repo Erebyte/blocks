@@ -48,12 +48,25 @@ var Terrain = function () {
 	this.entities = [];
 	this.is_loading = true;
 	this.is_error = false;
+	this.target_obj = null;
+	this.target_hist = [];
 };
 
 // -=- Terrain Functions -=- //
-// Terrain.prototype.toggleDebug = function () {
-// 	this._debug = !this._debug;
-// };
+Terrain.prototype.toggleDebug = function () {
+	this._debug = !this._debug;
+};
+Terrain.prototype.update = function () {
+	if(this.target_hist.length) {
+		var obj = this.target_hist[this.target_hist.length-1];
+		var msg = 'Obj-type: '+(obj.type||'undefined')+'<br>';
+		msg += 'Obj-pos: ('+obj.x+','+obj.y+')<br>';
+		for(var key in obj){
+			msg += 'Obj-'+key+': '+JSON.stringify(obj[key])+'<br>';
+		}
+		debug_htm.html(msg,true);
+	}
+};
 Terrain.prototype.draw = function (xoff, yoff) {
 	if(!this.is_loading){
 		// background(100);
@@ -83,7 +96,7 @@ Terrain.prototype.draw = function (xoff, yoff) {
 		fill(255,50,50);
 		for (i=0;i<this.entities.length;i++){
 			var ent = this.entities[i];
-			ellipse(ent.pos[0],ent.pos[1],5,5);
+			ellipse(ent.x,ent.y,5,5);
 		}
 		pop();
 	}else if(this.is_error){
@@ -94,23 +107,24 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	// ellipse(0,0,20,20);
 };
 Terrain.prototype.draw_debug = function () {
-	// push();
-	// translate(width/2-camera.x, height/2-camera.y);
-	// noFill();
-	// stroke(0,255,0);
-	// ellipse(player.x,player.y,1,1);
-	// ellipse(player.x,player.y,player.w,player.w);
-	// for (var i = this._debug_dat.length - 1; i >= 0; i--) {
-	// 	var ln = this._debug_dat[i];
-	// 	if (ln.length===3) {
-	// 		stroke(ln[2].x,ln[2].y,ln[2].z);
-	// 		line(ln[0].x,ln[0].y,ln[1].x,ln[1].y);
-	// 	}else if (ln.length===2) {
-	// 		stroke(ln[1].x,ln[1].y,ln[1].z);
-	// 		ellipse(ln[0].x,ln[0].y,ln[0].z,ln[0].z);
-	// 	}
-	// }
-	// pop();
+};
+Terrain.prototype.mousePressed = function () {
+	var results = [];
+	if(!this.is_loading){
+		for(i=0;i<this.npcs.length;i++){
+			var npc = this.npcs[i];
+			if(dist(npc.x,npc.y,amouseX,amouseY)<=5)results.push(npc);
+		}
+		for(i=0;i<this.entities.length;i++){
+			var ent = this.entities[i];
+			if(dist(ent.x,ent.y,amouseX,amouseY)<=5)results.push(ent);
+		}
+	}
+	if(results.length){
+		console.log(results);
+		this.target_obj = results[0];
+		this.target_hist.push(results[0]);
+	}
 };
 
 // -=- Load Map Function -=- //
@@ -132,10 +146,15 @@ Terrain.prototype.loadmap = function (url) {
 			self.poly.push(new_poly);
 		}
 		for (var i = json.npcs.length - 1; i >= 0; i--) {
-			self.npcs.push(json.npcs[i]);
+			var npc = json.npcs[i];
+			npc.type='NPC';
+			self.npcs.push(npc);
 		}
 		for (var i = json.entities.length -1;i>=0;i--) {
-			self.entities.push(json.entities[i]);
+			var ent = json.entities[i];
+			ent.x = ent.pos[0];
+			ent.y = ent.pos[1];
+			self.entities.push(ent);
 		}
 		self.is_loading=false;
 	}, function () {
