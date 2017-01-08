@@ -16,12 +16,12 @@ var Camera = function () {
 	this.zoom = 1;
 };
 Camera.prototype.apply_transition = function () {
-	translate(width/2-this.x,height/2-this.y);
+	translate(width/2-this.x*this.zoom,height/2-this.y*this.zoom);
 	scale(this.zoom);
 };
 Camera.prototype.move = function (x, y) {
-	this.x -= x;
-	this.y -= y;
+	this.x -= x/this.zoom;
+	this.y -= y/this.zoom;
 };
 
 
@@ -44,12 +44,14 @@ var Terrain = function () {
 	this._debug = false;
 	this._debug_dat = [];
 	this.map_data = [];
-	this.npcs = [];
 	this.entities = [];
 	this.is_loading = true;
 	this.is_error = false;
 	this.target_obj = null;
 	this.target_hist = [];
+
+	this.place_target = null;
+	this.clickMode = 'default';
 };
 
 // -=- Terrain Functions -=- //
@@ -59,7 +61,7 @@ Terrain.prototype.toggleDebug = function () {
 Terrain.prototype.update = function () {
 	if(this.target_hist.length) {
 		var obj = this.target_hist[this.target_hist.length-1];
-		var msg = 'Obj-type: '+(obj.type||'undefined')+'<br>';
+		var msg = '';
 		msg += 'Obj-pos: ('+obj.x+','+obj.y+')<br>';
 		for(var key in obj){
 			msg += 'Obj-'+key+': '+JSON.stringify(obj[key])+'<br>';
@@ -87,15 +89,19 @@ Terrain.prototype.draw = function (xoff, yoff) {
 			endShape(CLOSE);
 		}
 		rectMode(CENTER);
-		fill(100,100,200);
-		for (i=0;i<this.npcs.length;i++){
-			var npc = this.npcs[i];
-			rect(npc.x,npc.y-20,20,40);
-			ellipse(npc.x,npc.y,5,5);
-		}
-		fill(255,50,50);
+		ellipseMode(CENTER);
+		// for (i=0;i<this.npcs.length;i++){
+		// 	var npc = this.npcs[i];
+		// 	rect(npc.x,npc.y-20,20,40);
+		// 	ellipse(npc.x,npc.y,5,5);
+		// }
 		for (i=0;i<this.entities.length;i++){
 			var ent = this.entities[i];
+			fill(255,50,50);
+			if(ent.type == 'NPC'){
+				fill(100,100,200);
+				rect(ent.x,ent.y-20,20,40);
+			}
 			ellipse(ent.x,ent.y,5,5);
 		}
 		pop();
@@ -104,26 +110,49 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	}else {
 
 	}
+	// calibration points
 	// ellipse(0,0,20,20);
+	// ellipse(20,20,20,20);
+	// ellipse(40,40,20,20);
+	// ellipse(60,60,20,20);
 };
 Terrain.prototype.draw_debug = function () {
 };
+Terrain.prototype.keyPressed = function () {
+	if(key==' ')this.clickMode='default';
+	if(key=='Z')this.clickMode='delete';
+	if(key=='X')this.clickMode='cut';
+	if(key=='C')this.clickMode='copy';
+	if(key=='V')this.clickMode='place';
+	if([' ','Z','X','C'].indexOf(key)!=-1)this.target_obj=null;
+};
 Terrain.prototype.mousePressed = function () {
-	var results = [];
-	if(!this.is_loading){
-		for(i=0;i<this.npcs.length;i++){
-			var npc = this.npcs[i];
-			if(dist(npc.x,npc.y,amouseX,amouseY)<=5)results.push(npc);
+	if(!this.target_obj){
+		var results = [];
+		if(!this.is_loading){
+			for(i=0;i<this.entities.length;i++){
+				var ent = this.entities[i];
+				if(dist(ent.x,ent.y,amouseX,amouseY)<=5)results.push(ent);
+			}
+			// do polys too
 		}
-		for(i=0;i<this.entities.length;i++){
-			var ent = this.entities[i];
-			if(dist(ent.x,ent.y,amouseX,amouseY)<=5)results.push(ent);
+		if(results.length){
+			console.log(results);
+			this.target_obj = results[0];
+			this.target_hist.push(results[0]);
+			if(this.clickMode=='cut'||this.clickMode=='delete'){
+				i = this.entities.indexOf(this.target_obj);
+				if(i>=0)this.entities.splice(i,1);
+			}
+			if(this.clickMode=='cut'||this.clickMode=='copy')this.clickMode = 'place';
 		}
-	}
-	if(results.length){
-		console.log(results);
-		this.target_obj = results[0];
-		this.target_hist.push(results[0]);
+	}else {
+		if(this.clickMode=='place'){
+			var e = JSON.parse(JSON.stringify(this.target_obj));
+			e.x = amouseX;
+			e.y = amouseY;
+			this.entities.push(e);
+		}
 	}
 };
 
@@ -148,7 +177,7 @@ Terrain.prototype.loadmap = function (url) {
 		for (var i = json.npcs.length - 1; i >= 0; i--) {
 			var npc = json.npcs[i];
 			npc.type='NPC';
-			self.npcs.push(npc);
+			self.entities.push(npc);
 		}
 		for (var i = json.entities.length -1;i>=0;i--) {
 			var ent = json.entities[i];
@@ -161,4 +190,11 @@ Terrain.prototype.loadmap = function (url) {
 		// error callback
 		self.is_error = true;
 	});
+};
+
+
+// -=- Load Map Function -=- //
+Terrain.prototype.savemap = function () {
+	console.log('saving map');
+	console.log('done');
 };

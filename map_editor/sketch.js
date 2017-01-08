@@ -10,10 +10,12 @@
 var VERSION = 'pra-alpha: v0.5.6'; // version.release.patch
 var amouseX;
 var amouseY;
+var hmouseCanvas;
 var params;
 var camera;
 var terrain;
 var debug_htm;
+var info_htm;
 var map_input;
 var editor_nav= [];
 var draw_q = [];
@@ -28,7 +30,7 @@ var base_url = base_url || '.';
 function setup () {
 	// Create Canvas //
 	var myCanvas = createCanvas(800, 600);
-	myCanvas.parent('game_container');
+	myCanvas.parent('game-container');
 	// Init //
 	params = getURLParams();
 	camera = new Camera();
@@ -36,15 +38,19 @@ function setup () {
 
 	var map = params.m || 'test';
 	terrain.loadmap('../maps/'+map+'.json');
+	info_htm = createP();
+	info_htm.parent('#game-nav');
 	debug_htm = createP();
-	map_input = createInput(map);
-	map_input.parent('#game-nav');
+	debug_htm.parent('#game-debug');
 	var make_button = function (t,p,f){
 		var b = createButton(t);
 		if(p)b.parent(p);
 		if(f)b.mousePressed(f);
 		return b;
 	};
+	editor_nav.push(make_button('Save Map','#game-nav',terrain.savemap));
+	map_input = createInput(map);
+	map_input.parent('#game-nav');
 	editor_nav.push(make_button('Load Map','#game-nav',function(){
 		var base = getURL().split('?')[0];
 		location.href = base+'?m='+map_input.value();
@@ -61,12 +67,18 @@ function setup () {
 //
 function draw () {
 	debug_htm.html('');
+	info_htm.html('');
 	background(255);
 	//update
-	amouseX = mouseX + camera.x - width/2;
-	amouseY = mouseY + camera.y - height/2;
+	amouseX = floor(mouseX/camera.zoom) + camera.x - (width/2)/camera.zoom;
+	amouseY = floor(mouseY/camera.zoom) + camera.y - (height/2)/camera.zoom;
+	hmouseCanvas = 0<=mouseX && mouseX<=width && 0<=mouseY && mouseY<=height;
+
 	terrain.update();
-	debug_htm.html('Camera:('+camera.x+','+camera.y+','+camera.zoom+')<br>',true);
+
+	info_htm.html('Camera:('+floor(camera.x)+','+floor(camera.y)+','+camera.zoom+') ',true);
+	info_htm.html('Mouse:('+mouseX+','+mouseY+';'+floor(amouseX)+','+floor(amouseY)+';'+hmouseCanvas+') ',true);
+	info_htm.html('Mode: '+terrain.clickMode+' ',true);
 	//draw
 	push();
 	camera.apply_transition();
@@ -77,6 +89,7 @@ function draw () {
 
 // -=-=- Functions -=-=- //
 function keyPressed() {
+	terrain.keyPressed();
 	// if(key == '1') game.toggleDebug();
 	// if(key == '2') terrain.toggleDebug();
 	// if(key == '3') player.toggleDebug();
@@ -88,20 +101,26 @@ function mousePressed() { // For debug use !?!?! //
 	terrain.mousePressed();
 }
 function mouseReleased() {
-	terrain.target_obj=null;
+	if(terrain.target_obj && ['default','delete'].indexOf(terrain.clickMode)!=-1){
+		terrain.target_obj.x = round(terrain.target_obj.x);
+		terrain.target_obj.y = round(terrain.target_obj.y);
+		terrain.target_obj=null;
+	}
 }
 function mouseDragged(){
 	var dx = mouseX - pmouseX;
 	var dy = mouseY - pmouseY;
 	if(!terrain.target_obj){
 		camera.move(dx,dy);
-	}else{
-		terrain.target_obj.x += dx;
-		terrain.target_obj.y += dy;
+	}else if(terrain.clickMode=='default'){
+		terrain.target_obj.x += dx/camera.zoom;
+		terrain.target_obj.y += dy/camera.zoom;
 	}
 }
 function mouseWheel(e){
-	camera.zoom += e.delta*0.01;
-	camera.zoom = constrain(camera.zoom,0.3,10);
+	if(hmouseCanvas){
+		camera.zoom += e.delta*(camera.zoom*0.001);
+		camera.zoom = constrain(camera.zoom,0.3,10);
+	}
 }
 new p5();
