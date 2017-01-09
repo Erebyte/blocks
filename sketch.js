@@ -30,7 +30,7 @@ function setup () {
 	windows = new Windows();
 	player = new Player();
 	terrain = new Terrain();
-	terrain.loadmap(base_url+'/maps/cross.json');
+	terrain.loadmap(base_url+'/maps/test2.json');
 	camera = new Camera();
 	// Test //
 

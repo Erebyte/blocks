@@ -115,6 +115,11 @@ function mouseDragged(){
 	}else if(terrain.clickMode=='default'){
 		terrain.target_obj.x += dx/camera.zoom;
 		terrain.target_obj.y += dy/camera.zoom;
+		if(terrain.target_obj.type=='poly'){
+			var obj = terrain.target_obj;
+			obj.vertex.x = obj.x;
+			obj.vertex.y = obj.y;
+		}
 	}
 }
 function mouseWheel(e){

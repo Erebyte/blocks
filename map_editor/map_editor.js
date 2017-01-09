@@ -46,6 +46,7 @@ var Terrain = function () {
 	this.map_data = [];
 	this.entities = [];
 	this.is_loading = true;
+	this.is_saving = false;
 	this.is_error = false;
 	this.target_obj = null;
 	this.target_hist = [];
@@ -64,7 +65,10 @@ Terrain.prototype.update = function () {
 		var msg = '';
 		msg += 'Obj-pos: ('+obj.x+','+obj.y+')<br>';
 		for(var key in obj){
-			msg += 'Obj-'+key+': '+JSON.stringify(obj[key])+'<br>';
+			try{
+				msg += 'Obj-'+key+': '+JSON.stringify(obj[key])+'<br>';
+			}
+			catch(err){}
 		}
 		debug_htm.html(msg,true);
 	}
@@ -134,7 +138,20 @@ Terrain.prototype.mousePressed = function () {
 				var ent = this.entities[i];
 				if(dist(ent.x,ent.y,amouseX,amouseY)<=5)results.push(ent);
 			}
-			// do polys too
+			for (pi=0;pi<this.poly.length;pi++){
+				var poly = this.poly[pi];
+				for(i=0; i < poly.length; i++){
+					// vertex(poly[i].x,poly[i].y);
+					if(dist(poly[i].x,poly[i].y,amouseX,amouseY)<=5)results.push({
+						type:'poly',
+						poly:poly,
+						vertex:poly[i],
+						x:poly[i].x,
+						y:poly[i].y,
+						index:i
+					});
+				}
+			}
 		}
 		if(results.length){
 			console.log(results);
@@ -193,8 +210,36 @@ Terrain.prototype.loadmap = function (url) {
 };
 
 
-// -=- Load Map Function -=- //
+// -=- Save Map Function -=- //
 Terrain.prototype.savemap = function () {
+	self = terrain;
 	console.log('saving map');
+	self.is_saving = true;
+	var json = {
+		map_data:Object.assign({},self.map_data,{vertex:[]}),
+		entities:[],
+		npcs:[],
+	};
+	for(pi=0;pi<self.poly.length;pi++){
+		var poly = self.poly[pi];
+		var p = [];
+		for(i=0;i<poly.length;i++){
+			p.push([poly[i].x,poly[i].y]);
+		}
+		json.map_data.vertex.push(p);
+	}
+	for(i=0;i<self.entities.length;i++){
+		var e = JSON.parse(JSON.stringify(self.entities[i]));
+		if(e.type=='NPC'){
+			e.type=undefined;
+			json.npcs.push(e);
+		}else{
+			e.pos = [e.x,e.y];
+			e.x=undefined;
+			e.y=undefined;
+			json.entities.push(e);
+		}
+	}
+	saveJSON(json,map_input.value()+'.json');
 	console.log('done');
 };
