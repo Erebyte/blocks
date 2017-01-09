@@ -84,13 +84,18 @@ Terrain.prototype.draw = function (xoff, yoff) {
 			background(30);
 			fill(90);
 		}
+		var v = [];
 		for (pi=0;pi<this.poly.length;pi++){
 			var poly = this.poly[pi];
 			beginShape();
 			for(i=0; i < poly.length; i++){
 				vertex(poly[i].x,poly[i].y);
+				v.push(poly[i]);
 			}
 			endShape(CLOSE);
+		}
+		for(i=0;i<v.length;i++){
+			ellipse(v[i].x,v[i].y,5,5);
 		}
 		rectMode(CENTER);
 		ellipseMode(CENTER);
@@ -121,6 +126,14 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	// ellipse(60,60,20,20);
 };
 Terrain.prototype.draw_debug = function () {
+};
+Terrain.prototype.new_poly = function () {
+	terrain.target_obj = {type:'poly',new:true};
+	terrain.clickMode = 'place';
+};
+Terrain.prototype.new_obj = function () {
+	terrain.target_obj = {type:'none'};
+	terrain.clickMode = 'place';
 };
 Terrain.prototype.keyPressed = function () {
 	if(key==' ')this.clickMode='default';
@@ -158,17 +171,45 @@ Terrain.prototype.mousePressed = function () {
 			this.target_obj = results[0];
 			this.target_hist.push(results[0]);
 			if(this.clickMode=='cut'||this.clickMode=='delete'){
-				i = this.entities.indexOf(this.target_obj);
-				if(i>=0)this.entities.splice(i,1);
+				if(this.target_obj.type!='poly'){
+					i = this.entities.indexOf(this.target_obj);
+					if(i>=0)this.entities.splice(i,1);
+				}else if(this.clickMode=='delete'){
+					this.target_obj.poly.splice(this.target_obj.index,1);
+				}
 			}
 			if(this.clickMode=='cut'||this.clickMode=='copy')this.clickMode = 'place';
 		}
-	}else {
-		if(this.clickMode=='place'){
+	}else if(this.clickMode=='place' && hmouseCanvas){
+		if(this.target_obj.type!='poly') {
 			var e = JSON.parse(JSON.stringify(this.target_obj));
 			e.x = amouseX;
 			e.y = amouseY;
 			this.entities.push(e);
+		}else if(this.target_obj.new){
+			var p = [
+				createVector(amouseX+20,amouseY-20),
+				createVector(amouseX-20,amouseY-20),
+				createVector(amouseX,amouseY+20)
+			];
+			this.poly.push(p);
+			this.clickMode='default';
+		}
+	}
+};
+Terrain.prototype.mouseDoublePressed = function () {
+	for (pi=0;pi<this.poly.length;pi++){
+		var poly = this.poly[pi];
+		for(i=0; i < poly.length; i++){
+			var c = poly[i];
+			var n = poly[i+1];
+			if(i+1==poly.length)n=poly[0];
+			if(collideLineCircle(c.x,c.y,n.x,n.y,amouseX,amouseY,10)){
+				if(dist(c.x,c.y,amouseX,amouseY)<=10)return;//highlight point
+				if(dist(n.x,n.y,amouseX,amouseY)<=10)return;
+				// console.log('new point');
+				poly.splice(i+1,0,createVector(amouseX,amouseY))
+			}
 		}
 	}
 };

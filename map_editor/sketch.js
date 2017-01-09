@@ -11,6 +11,8 @@ var VERSION = 'pra-alpha: v0.5.6'; // version.release.patch
 var amouseX;
 var amouseY;
 var hmouseCanvas;
+var mouseLastClicked;
+var doublePressedSpeed = 30;
 var params;
 var camera;
 var terrain;
@@ -56,8 +58,9 @@ function setup () {
 		location.href = base+'?m='+map_input.value();
 		// console.log(map_input.value());
 	}));
-	editor_nav.push(make_button('Edit Object','#game-nav'));
-	editor_nav.push(make_button('New Object','#game-nav'));
+	editor_nav.push(make_button('New Poly','#game-nav',terrain.new_poly));
+	editor_nav.push(make_button('New Object','#game-nav',terrain.new_obj));
+	editor_nav.push(make_button('Edit Object','#game-nav',terrain.edit_obj));
 	// Test //
 }
 
@@ -95,10 +98,19 @@ function keyPressed() {
 	// if(key == '3') player.toggleDebug();
 	// if(key == 'E' && !windows.open_window) windows.menu.open();
 }
-
+function mouseDoublePressed() {
+	terrain.mouseDoublePressed();
+}
 function mousePressed() { // For debug use !?!?! //
 	// console.log(amouseX,amouseY);
 	terrain.mousePressed();
+	//doublepressed
+	if(mouseDoublePressed&&frameCount-mouseLastClicked<=doublePressedSpeed){
+		mouseDoublePressed();
+		mouseLastClicked = -Infinity;
+		return;
+	}
+	mouseLastClicked = frameCount;
 }
 function mouseReleased() {
 	if(terrain.target_obj && ['default','delete'].indexOf(terrain.clickMode)!=-1){
