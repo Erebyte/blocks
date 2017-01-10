@@ -7,7 +7,7 @@
 */
 
 // Globals and Constants //
-var VERSION = 'pra-alpha: v0.5.6'; // version.release.patch
+var VERSION = 'v0.5.0'; // version.release.patch
 var amouseX;
 var amouseY;
 var hmouseCanvas;
