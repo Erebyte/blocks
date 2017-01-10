@@ -135,6 +135,32 @@ Terrain.prototype.new_obj = function () {
 	terrain.target_obj = {type:'none'};
 	terrain.clickMode = 'place';
 };
+Terrain.prototype.edit_obj = function() {
+	var obj = terrain.target_hist[terrain.target_hist.length-1];
+	if(obj && obj.type!='poly'){
+		console.log('editing obj');
+
+		var dimmer = createDiv();
+		dimmer.position(0,0);
+		dimmer.style('width',window.innerWidth+'px');
+		dimmer.style('height',window.innerHeight+'px');
+		dimmer.elt.className = 'dimmer';
+
+		var edit_win = createDiv();
+		var w = 200, h = 400;
+		edit_win.position(window.innerWidth/2-w/2, window.innerHeight/2-h/2);
+		edit_win.style('width',w+'px');
+		edit_win.style('height',h+'px');
+		edit_win.elt.className = 'hover-window';
+
+		dimmer.mousePressed(function(){
+			this.remove();
+			edit_win.remove();
+		});
+
+		//fill edit_win
+	}
+};
 Terrain.prototype.keyPressed = function () {
 	if(key==' ')this.clickMode='default';
 	if(key=='Z')this.clickMode='delete';
