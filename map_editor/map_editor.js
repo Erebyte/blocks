@@ -138,27 +138,67 @@ Terrain.prototype.new_obj = function () {
 Terrain.prototype.edit_obj = function() {
 	var obj = terrain.target_hist[terrain.target_hist.length-1];
 	if(obj && obj.type!='poly'){
-		console.log('editing obj');
+		// console.log('editing obj');
+		function close_window () {
+			dimmer.remove();
+			edit_win.remove();
+		}
 
-		var dimmer = createDiv();
+		var dimmer = createDiv('');
 		dimmer.position(0,0);
 		dimmer.style('width',window.innerWidth+'px');
 		dimmer.style('height',window.innerHeight+'px');
 		dimmer.elt.className = 'dimmer';
 
-		var edit_win = createDiv();
-		var w = 200, h = 400;
+		var edit_win = createDiv('');
+		var w = 300, h = 400;
 		edit_win.position(window.innerWidth/2-w/2, window.innerHeight/2-h/2);
 		edit_win.style('width',w+'px');
 		edit_win.style('height',h+'px');
 		edit_win.elt.className = 'hover-window';
 
-		dimmer.mousePressed(function(){
-			this.remove();
-			edit_win.remove();
-		});
+		dimmer.mousePressed(close_window);
 
 		//fill edit_win
+		var obj_func = function(obj){
+			return function () {
+				console.log('clicked', JSON.stringify(obj,true), this);
+			};
+		};
+
+		for(var key in obj){
+			var div = createDiv('');
+			div.attribute('value-type',typeof obj[key]);
+			div.child(createP('Obj-'+key));
+			if(typeof obj[key] != 'object'){
+				div.attribute('value-initial',obj[key]);
+				div.child(createInput(obj[key]));
+			}else {
+				div.attribute('value-initial',JSON.stringify(obj[key]));
+				var c = createP(obj[key]);
+				c.addClass('input');
+				c.mousePressed(obj_func(obj[key]));
+				div.child(c);
+			}
+			div.parent(edit_win);
+		}
+
+		var submit = createDiv('');
+		submit.addClass('submit');
+		submit.parent(edit_win);
+
+		var save = createButton('Save');
+		save.mousePressed(function(){
+			console.log('saving');
+			close_window();
+		});
+		submit.child(save);
+
+		var reset = createButton('Reset');
+		reset.mousePressed(function(){
+			console.log('reseting');
+		});
+		submit.child(reset);
 	}
 };
 Terrain.prototype.keyPressed = function () {
