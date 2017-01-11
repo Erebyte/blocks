@@ -3,10 +3,53 @@
 <head>
 	<title>Blocks</title>
 
+	<style type="text/css">
+	.hover-window{
+		position:absolute;
+		background:#F0F0F0;
+		border-radius: 20px;
+		border:2px solid #3c3c3c;
+		z-index:100;
+		box-shadow: 5px 5px 5px #181818;
+		padding:10px;
+	}
+	.hover-window div{
+		margin: 2px;
+	}
+	.hover-window p{
+		display: inline-table;
+		margin: 0;
+	}
+	.hover-window input, .hover-window .input{
+		float: right;
+		display: inline-table;
+	}
+	.hover-window .key-input {
+		float: none;
+		width: 80px;
+	}
+	.hover-window .submit {
+		position:absolute;
+		bottom: 0;
+		margin-bottom: 10px;
+	}
+	.dimmer{
+		background: #000;
+		position: absolute;
+		opacity: .5;
+		top: 0;
+		z-index:99;
+	}
+	#game-debug{
+		max-height: 250;
+		overflow-y: scroll;
+	}
+	</style>
+
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.3/p5.js"></script>
 	<script src="//cdn.rawgit.com/lmccart/p5.js/master/lib/addons/p5.dom.js"></script>
-	
+
 	<script type="text/javascript">
 		//-=-=-=-=-=-=- Functions -=-=-=-=-=-=-//
 		// callbacks
@@ -28,8 +71,10 @@
 
 </head>
 <body>
-
-<div id='game_container'></div>
+<div id='game-nav'></div>
+<div id='game-info'</div>
+<div id='game-container'></div>
+<div id='game-debug'</div>
 
 </body>
 </html>

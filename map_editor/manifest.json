@@ -6,6 +6,7 @@
 		"enable_p5" : true
 	},
 	"scripts" : [
+		"../p5.collide2d.js",
 		"./map_editor.js",
 		"./sketch.js"
 	]

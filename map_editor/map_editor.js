@@ -16,12 +16,12 @@ var Camera = function () {
 	this.zoom = 1;
 };
 Camera.prototype.apply_transition = function () {
-	translate(width/2-this.x,height/2-this.y);
+	translate(width/2-this.x*this.zoom,height/2-this.y*this.zoom);
 	scale(this.zoom);
 };
 Camera.prototype.move = function (x, y) {
-	this.x -= x;
-	this.y -= y;
+	this.x -= x/this.zoom;
+	this.y -= y/this.zoom;
 };
 
 
@@ -44,16 +44,36 @@ var Terrain = function () {
 	this._debug = false;
 	this._debug_dat = [];
 	this.map_data = [];
-	this.npcs = [];
 	this.entities = [];
 	this.is_loading = true;
+	this.is_saving = false;
 	this.is_error = false;
+	this.is_popup = false;
+	this.target_obj = null;
+	this.target_hist = [];
+
+	this.place_target = null;
+	this.clickMode = 'default';
 };
 
 // -=- Terrain Functions -=- //
-// Terrain.prototype.toggleDebug = function () {
-// 	this._debug = !this._debug;
-// };
+Terrain.prototype.toggleDebug = function () {
+	this._debug = !this._debug;
+};
+Terrain.prototype.update = function () {
+	if(this.target_hist.length) {
+		var obj = this.target_hist[this.target_hist.length-1];
+		var msg = '';
+		msg += 'Obj-pos: ('+obj.x+','+obj.y+')<br>';
+		for(var key in obj){
+			try{
+				msg += 'Obj-'+key+': '+JSON.stringify(obj[key])+'<br>';
+			}
+			catch(err){}
+		}
+		debug_htm.html(msg,true);
+	}
+};
 Terrain.prototype.draw = function (xoff, yoff) {
 	if(!this.is_loading){
 		// background(100);
@@ -65,25 +85,34 @@ Terrain.prototype.draw = function (xoff, yoff) {
 			background(30);
 			fill(90);
 		}
+		var v = [];
 		for (pi=0;pi<this.poly.length;pi++){
 			var poly = this.poly[pi];
 			beginShape();
 			for(i=0; i < poly.length; i++){
 				vertex(poly[i].x,poly[i].y);
+				v.push(poly[i]);
 			}
 			endShape(CLOSE);
 		}
-		rectMode(CENTER);
-		fill(100,100,200);
-		for (i=0;i<this.npcs.length;i++){
-			var npc = this.npcs[i];
-			rect(npc.x,npc.y-20,20,40);
-			ellipse(npc.x,npc.y,5,5);
+		for(i=0;i<v.length;i++){
+			ellipse(v[i].x,v[i].y,5,5);
 		}
-		fill(255,50,50);
+		rectMode(CENTER);
+		ellipseMode(CENTER);
+		// for (i=0;i<this.npcs.length;i++){
+		// 	var npc = this.npcs[i];
+		// 	rect(npc.x,npc.y-20,20,40);
+		// 	ellipse(npc.x,npc.y,5,5);
+		// }
 		for (i=0;i<this.entities.length;i++){
 			var ent = this.entities[i];
-			ellipse(ent.pos[0],ent.pos[1],5,5);
+			fill(255,50,50);
+			if(ent.type == 'NPC'){
+				fill(100,100,200);
+				rect(ent.x,ent.y-20,20,40);
+			}
+			ellipse(ent.x,ent.y,5,5);
 		}
 		pop();
 	}else if(this.is_error){
@@ -91,26 +120,218 @@ Terrain.prototype.draw = function (xoff, yoff) {
 	}else {
 
 	}
+	// calibration points
 	// ellipse(0,0,20,20);
+	// ellipse(20,20,20,20);
+	// ellipse(40,40,20,20);
+	// ellipse(60,60,20,20);
 };
 Terrain.prototype.draw_debug = function () {
-	// push();
-	// translate(width/2-camera.x, height/2-camera.y);
-	// noFill();
-	// stroke(0,255,0);
-	// ellipse(player.x,player.y,1,1);
-	// ellipse(player.x,player.y,player.w,player.w);
-	// for (var i = this._debug_dat.length - 1; i >= 0; i--) {
-	// 	var ln = this._debug_dat[i];
-	// 	if (ln.length===3) {
-	// 		stroke(ln[2].x,ln[2].y,ln[2].z);
-	// 		line(ln[0].x,ln[0].y,ln[1].x,ln[1].y);
-	// 	}else if (ln.length===2) {
-	// 		stroke(ln[1].x,ln[1].y,ln[1].z);
-	// 		ellipse(ln[0].x,ln[0].y,ln[0].z,ln[0].z);
-	// 	}
-	// }
-	// pop();
+};
+Terrain.prototype.new_poly = function () {
+	terrain.target_obj = {type:'poly',new:true};
+	terrain.clickMode = 'place';
+};
+Terrain.prototype.new_obj = function () {
+	terrain.target_obj = {type:'none'};
+	terrain.clickMode = 'place';
+};
+Terrain.prototype.edit_obj = function() {
+	var obj = terrain.target_hist[terrain.target_hist.length-1];
+	if(obj && obj.type!='poly'){
+		// console.log('editing obj');
+		var close_window = function () {
+			dimmer.remove();
+			edit_win.remove();
+			terrain.is_popup = false;
+		};
+		terrain.is_popup = true;
+
+		var dimmer = createDiv('');
+		dimmer.position(0,0);
+		dimmer.style('width',window.innerWidth+'px');
+		dimmer.style('height',window.innerHeight+'px');
+		dimmer.elt.className = 'dimmer';
+
+		var edit_win = createDiv('');
+		var w = 300, h = 400;
+		edit_win.position(window.innerWidth/2-w/2, window.innerHeight/2-h/2);
+		edit_win.style('width',w+'px');
+		edit_win.style('height',h+'px');
+		edit_win.elt.className = 'hover-window';
+
+		dimmer.mousePressed(close_window);
+
+		//fill edit_win
+		var obj_func = function(obj){
+			return function () {
+				console.log('clicked', JSON.stringify(obj,true), this);
+			};
+		};
+
+		var data = [];
+
+		for(var key in obj){
+			var div = createDiv('');
+			div.attribute('value-type',typeof obj[key]);
+			div.child(createP('Obj-'+key));
+			if(typeof obj[key] != 'object'){
+				div.attribute('value-initial',obj[key]);
+				div.child(createInput(obj[key]));
+			}else {
+				div.attribute('value-initial',JSON.stringify(obj[key]));
+				var c = createP(obj[key]);
+				c.addClass('input');
+				c.mousePressed(obj_func(obj[key]));
+				div.child(c);
+			}
+			data.push([key,div]);
+			div.parent(edit_win);
+		}
+
+		var new_item = createButton('new item');
+		new_item.style('margin',2);
+		new_item.mousePressed(function(){
+			console.log('new item');
+			var div = createDiv('');
+			div.attribute('value-type','');
+			div.attribute('value-initial','');
+			var inp = createInput();
+			inp.addClass('key-input');
+			// inp.elt.onblur = function(){
+			// 	console.log(inp.value());
+			// };
+			div.child(inp);
+			div.child(createInput());
+			data.push(['new',div]);
+			div.parent(edit_win);
+			this.parent(edit_win);
+		});
+		new_item.parent(edit_win);
+
+		var submit = createDiv('');
+		submit.addClass('submit');
+		submit.parent(edit_win);
+
+		var save = createButton('Save');
+		save.mousePressed(function(){
+			console.log('saving');
+			for(i=0;i<data.length;i++){
+				var d = data[i];
+				if(d[0]!='new'){
+					if(d[1].attribute('value-type')!='object'){
+						var v = d[1].elt.getElementsByTagName('input')[0].value;
+						if(v==''){
+							delete obj[d[0]];
+						}else if(d[1].attribute('value-type')=='string'){
+							obj[d[0]] = v;
+						}else if(typeof JSON.parse(v)==d[1].attribute('value-type')){
+							obj[d[0]] = JSON.parse(v);
+						}
+						else{
+							console.log('error: key-'+d[0]);
+						}
+						// console.log(v);
+					}
+				}else{
+					var tags = d[1].elt.getElementsByTagName('input');
+					try{
+						obj[tags[0].value]=JSON.parse(tags[1].value);
+					}catch(err){
+						obj[tags[0].value]=tags[1].value;
+					}
+				}
+			}
+			close_window();
+		});
+		submit.child(save);
+
+		var reset = createButton('Reset');
+		reset.mousePressed(function(){
+			console.log('reseting');
+		});
+		submit.child(reset);
+	}
+};
+Terrain.prototype.keyPressed = function () {
+	if(!this.is_popup){
+		if(key==' ')this.clickMode='default';
+		if(key=='Z')this.clickMode='delete';
+		if(key=='X')this.clickMode='cut';
+		if(key=='C')this.clickMode='copy';
+		if(key=='V')this.clickMode='place';
+		if([' ','Z','X','C'].indexOf(key)!=-1)this.target_obj=null;
+	}
+};
+Terrain.prototype.mousePressed = function () {
+	if(!this.target_obj){
+		var results = [];
+		if(!this.is_loading){
+			for(i=0;i<this.entities.length;i++){
+				var ent = this.entities[i];
+				if(dist(ent.x,ent.y,amouseX,amouseY)<=5)results.push(ent);
+			}
+			for (pi=0;pi<this.poly.length;pi++){
+				var poly = this.poly[pi];
+				for(i=0; i < poly.length; i++){
+					// vertex(poly[i].x,poly[i].y);
+					if(dist(poly[i].x,poly[i].y,amouseX,amouseY)<=5)results.push({
+						type:'poly',
+						poly:poly,
+						vertex:poly[i],
+						x:poly[i].x,
+						y:poly[i].y,
+						index:i
+					});
+				}
+			}
+		}
+		if(results.length){
+			console.log(results);
+			this.target_obj = results[0];
+			this.target_hist.push(results[0]);
+			if(this.clickMode=='cut'||this.clickMode=='delete'){
+				if(this.target_obj.type!='poly'){
+					i = this.entities.indexOf(this.target_obj);
+					if(i>=0)this.entities.splice(i,1);
+				}else if(this.clickMode=='delete'){
+					this.target_obj.poly.splice(this.target_obj.index,1);
+				}
+			}
+			if(this.clickMode=='cut'||this.clickMode=='copy')this.clickMode = 'place';
+		}
+	}else if(this.clickMode=='place' && hmouseCanvas){
+		if(this.target_obj.type!='poly') {
+			var e = JSON.parse(JSON.stringify(this.target_obj));
+			e.x = amouseX;
+			e.y = amouseY;
+			this.entities.push(e);
+		}else if(this.target_obj.new){
+			var p = [
+				createVector(amouseX+20,amouseY-20),
+				createVector(amouseX-20,amouseY-20),
+				createVector(amouseX,amouseY+20)
+			];
+			this.poly.push(p);
+			this.clickMode='default';
+		}
+	}
+};
+Terrain.prototype.mouseDoublePressed = function () {
+	for (pi=0;pi<this.poly.length;pi++){
+		var poly = this.poly[pi];
+		for(i=0; i < poly.length; i++){
+			var c = poly[i];
+			var n = poly[i+1];
+			if(i+1==poly.length)n=poly[0];
+			if(collideLineCircle(c.x,c.y,n.x,n.y,amouseX,amouseY,10)){
+				if(dist(c.x,c.y,amouseX,amouseY)<=10)return;//highlight point
+				if(dist(n.x,n.y,amouseX,amouseY)<=10)return;
+				// console.log('new point');
+				poly.splice(i+1,0,createVector(amouseX,amouseY))
+			}
+		}
+	}
 };
 
 // -=- Load Map Function -=- //
@@ -132,14 +353,54 @@ Terrain.prototype.loadmap = function (url) {
 			self.poly.push(new_poly);
 		}
 		for (var i = json.npcs.length - 1; i >= 0; i--) {
-			self.npcs.push(json.npcs[i]);
+			var npc = json.npcs[i];
+			npc.type='NPC';
+			self.entities.push(npc);
 		}
 		for (var i = json.entities.length -1;i>=0;i--) {
-			self.entities.push(json.entities[i]);
+			var ent = json.entities[i];
+			ent.x = ent.pos[0];
+			ent.y = ent.pos[1];
+			self.entities.push(ent);
 		}
 		self.is_loading=false;
 	}, function () {
 		// error callback
 		self.is_error = true;
 	});
+};
+
+
+// -=- Save Map Function -=- //
+Terrain.prototype.savemap = function () {
+	self = terrain;
+	console.log('saving map');
+	self.is_saving = true;
+	var json = {
+		map_data:Object.assign({},self.map_data,{vertex:[]}),
+		entities:[],
+		npcs:[],
+	};
+	for(pi=0;pi<self.poly.length;pi++){
+		var poly = self.poly[pi];
+		var p = [];
+		for(i=0;i<poly.length;i++){
+			p.push([poly[i].x,poly[i].y]);
+		}
+		json.map_data.vertex.push(p);
+	}
+	for(i=0;i<self.entities.length;i++){
+		var e = JSON.parse(JSON.stringify(self.entities[i]));
+		if(e.type=='NPC'){
+			e.type=undefined;
+			json.npcs.push(e);
+		}else{
+			e.pos = [e.x,e.y];
+			e.x=undefined;
+			e.y=undefined;
+			json.entities.push(e);
+		}
+	}
+	saveJSON(json,map_input.value()+'.json');
+	console.log('done');
 };

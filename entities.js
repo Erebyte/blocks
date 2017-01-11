@@ -163,13 +163,13 @@ NPC.prototype.get_text = function () {
 // -=-=-=-=- Rat -=-=-=- 
 //
 //
-var Rat = function (pos, size) {
+var Rat = function (pos, ent) {
 	GameEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
 
-	this.size = size || random(0.75,1.5);
+	this.size = ent.size || random(0.75,1.5);
 	this.tail_len = floor(random(5,15)*this.size);
 
 	this.attribs = Object.assign({
@@ -420,15 +420,15 @@ Rock.prototype.grapple = function (state) {
 // w:<int(width)> (default:range 30,50)
 // size:<int> (default:1)
 //
-var Tree = function (pos, w, size) {
+var Tree = function (pos, ent) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
-	this.size = size = size || random(1,1.5);
-	this.w = w || random(30,50);
-	this.w = this.w*size;
-	this.h = 60*size;
+	this.size = ent.size || random(1,1.5);
+	this.w = ent.w || random(30,50);
+	this.w = this.w*this.size;
+	this.h = 60*this.size;
 	this.sway = (Math.random()*2-1)*15;
 	this.vertices = [];
 	this.points = [];
@@ -542,14 +542,14 @@ Tree.prototype.generate = function () {
 // pos:<vector2>
 // size:<int>
 //
-var Grass = function (pos, size) {
+var Grass = function (pos, ent) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
 	this.w = map(Math.random(),0,1,5,15);
 	this.sway = map(Math.random(),0,1,-this.w/4,this.w/4);
-	this.bush_size = size;
+	this.bush_size = ent.size;
 	this.points = [];
 	this.leaves = [];
 
@@ -624,14 +624,13 @@ Grass.prototype.draw = function () {
 // pos:<vector2>
 // typ:<int:0,3>
 //
-var Tombstone = function (pos, typ) {
+var Tombstone = function (pos, ent) {
 	TerrainEntity.call(this, {
 		x:pos.x,
 		y:pos.y
 	});
-	console.log(typ);
-	if(typ !== null){ // cause or picks greater?
-		this.typ = typ;
+	if(ent.typ != null){ // cause or picks greater?
+		this.typ = ent.typ;
 	}else{
 		this.typ = random([0,1,2,3]);
 	}

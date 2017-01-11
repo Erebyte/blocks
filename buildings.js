@@ -37,17 +37,17 @@ BuildingEntity.prototype = Object.create(TerrainEntity.prototype);
 // door_offsett:<int> (default:0)
 // width:<int> (default:200)
 //
-var House = function (pos, door_offset, width) {
+var House = function (pos, ent) {
 	BuildingEntity.call(this, {
 		x:pos.x,
 		y:pos.y,
-		w:width||200,
+		w:ent.width||200,
 		h:60
 	});
 	this.sway = map(Math.random(),0,1,-30,30);
 	this.rsway = map(Math.random(),0,1,-40,40);
 
-	this.door_offset = door_offset || 0;
+	this.door_offset = ent.door_offset || 0;
 };
 House.prototype = Object.create(BuildingEntity.prototype);
 
