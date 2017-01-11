@@ -48,6 +48,7 @@ var Terrain = function () {
 	this.is_loading = true;
 	this.is_saving = false;
 	this.is_error = false;
+	this.is_popup = false;
 	this.target_obj = null;
 	this.target_hist = [];
 
@@ -139,10 +140,12 @@ Terrain.prototype.edit_obj = function() {
 	var obj = terrain.target_hist[terrain.target_hist.length-1];
 	if(obj && obj.type!='poly'){
 		// console.log('editing obj');
-		function close_window () {
+		var close_window = function () {
 			dimmer.remove();
 			edit_win.remove();
-		}
+			terrain.is_popup = false;
+		};
+		terrain.is_popup = true;
 
 		var dimmer = createDiv('');
 		dimmer.position(0,0);
@@ -166,6 +169,8 @@ Terrain.prototype.edit_obj = function() {
 			};
 		};
 
+		var data = [];
+
 		for(var key in obj){
 			var div = createDiv('');
 			div.attribute('value-type',typeof obj[key]);
@@ -180,8 +185,29 @@ Terrain.prototype.edit_obj = function() {
 				c.mousePressed(obj_func(obj[key]));
 				div.child(c);
 			}
+			data.push([key,div]);
 			div.parent(edit_win);
 		}
+
+		var new_item = createButton('new item');
+		new_item.style('margin',2);
+		new_item.mousePressed(function(){
+			console.log('new item');
+			var div = createDiv('');
+			div.attribute('value-type','');
+			div.attribute('value-initial','');
+			var inp = createInput();
+			inp.addClass('key-input');
+			// inp.elt.onblur = function(){
+			// 	console.log(inp.value());
+			// };
+			div.child(inp);
+			div.child(createInput());
+			data.push(['new',div]);
+			div.parent(edit_win);
+			this.parent(edit_win);
+		});
+		new_item.parent(edit_win);
 
 		var submit = createDiv('');
 		submit.addClass('submit');
@@ -190,6 +216,32 @@ Terrain.prototype.edit_obj = function() {
 		var save = createButton('Save');
 		save.mousePressed(function(){
 			console.log('saving');
+			for(i=0;i<data.length;i++){
+				var d = data[i];
+				if(d[0]!='new'){
+					if(d[1].attribute('value-type')!='object'){
+						var v = d[1].elt.getElementsByTagName('input')[0].value;
+						if(v==''){
+							delete obj[d[0]];
+						}else if(d[1].attribute('value-type')=='string'){
+							obj[d[0]] = v;
+						}else if(typeof JSON.parse(v)==d[1].attribute('value-type')){
+							obj[d[0]] = JSON.parse(v);
+						}
+						else{
+							console.log('error: key-'+d[0]);
+						}
+						// console.log(v);
+					}
+				}else{
+					var tags = d[1].elt.getElementsByTagName('input');
+					try{
+						obj[tags[0].value]=JSON.parse(tags[1].value);
+					}catch(err){
+						obj[tags[0].value]=tags[1].value;
+					}
+				}
+			}
 			close_window();
 		});
 		submit.child(save);
@@ -202,12 +254,14 @@ Terrain.prototype.edit_obj = function() {
 	}
 };
 Terrain.prototype.keyPressed = function () {
-	if(key==' ')this.clickMode='default';
-	if(key=='Z')this.clickMode='delete';
-	if(key=='X')this.clickMode='cut';
-	if(key=='C')this.clickMode='copy';
-	if(key=='V')this.clickMode='place';
-	if([' ','Z','X','C'].indexOf(key)!=-1)this.target_obj=null;
+	if(!this.is_popup){
+		if(key==' ')this.clickMode='default';
+		if(key=='Z')this.clickMode='delete';
+		if(key=='X')this.clickMode='cut';
+		if(key=='C')this.clickMode='copy';
+		if(key=='V')this.clickMode='place';
+		if([' ','Z','X','C'].indexOf(key)!=-1)this.target_obj=null;
+	}
 };
 Terrain.prototype.mousePressed = function () {
 	if(!this.target_obj){

@@ -282,7 +282,7 @@ Windows.prototype.newSelector = function (x, y, opts, cb, do_close) {
 		var dx = (mouseX - pmouseX)*0.5;
 		var dy = (mouseY - pmouseY)*0.5;
 		var vec = this.sel_point.copy();
-		vec.limit(1);
+		vec.limit(0.2);
 		if(this.flags.is_focused)this.sel_point.add(dx,dy);
 		this.sel_point.sub(vec);
 		this.sel_point.limit(100);

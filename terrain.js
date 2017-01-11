@@ -341,16 +341,20 @@ Terrain.prototype.loadmap = function (url) {
 		}
 		for (var i = json.entities.length -1;i>=0;i--) {
 			var ent = json.entities[i];
-			// FIX: use lookup not if; else if
-			if (ent.type == 'Tree') {
-				entities.push(new Tree(createVector(ent.pos[0],ent.pos[1]),null,ent.size));
-			}else if (ent.type == 'Grass') {
-				entities.push(new Grass(createVector(ent.pos[0],ent.pos[1]),ent.size));
-			}else if (ent.type == 'House') {
-				entities.push(new House(createVector(ent.pos[0],ent.pos[1])));
-			}else if (ent.type == 'Tombstone') {
-				entities.push(new Tombstone(createVector(ent.pos[0],ent.pos[1]),ent.typ));
+			if(Object.keys(window).indexOf(ent.type)!=-1){
+				var c = window[ent.type];
+				entities.push(new c(createVector(ent.pos[0],ent.pos[1]),ent));
 			}
+			// FIX: use lookup not if; else if
+			// if (ent.type == 'Tree') {
+			// 	entities.push(new Tree(createVector(ent.pos[0],ent.pos[1]),null,ent.size));
+			// }else if (ent.type == 'Grass') {
+			// 	entities.push(new Grass(createVector(ent.pos[0],ent.pos[1]),ent.size));
+			// }else if (ent.type == 'House') {
+			// 	entities.push(new House(createVector(ent.pos[0],ent.pos[1])));
+			// }else if (ent.type == 'Tombstone') {
+			// 	entities.push(new Tombstone(createVector(ent.pos[0],ent.pos[1]),ent.typ));
+			// }
 		}
 	});
 };
