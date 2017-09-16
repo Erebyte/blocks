@@ -15,7 +15,7 @@ var camera;
 var draw_q = [];
 var entities = [];
 var base_url = base_url || '.';
-var game_url = game_url || './'
+// var game_url = game_url || './';
 
 
 // -=-=- Setup Function -=-=- //
@@ -32,6 +32,7 @@ function setup () {
 	player = new Player();
 	terrain = new Terrain();
 	terrain.loadmap(game_url+'maps/test2.json');
+	console.log('Game_URL:', game_url);
 	camera = new Camera();
 	// Test //
 
