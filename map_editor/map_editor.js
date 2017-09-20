@@ -43,12 +43,13 @@ Camera.prototype.move = function (x, y) {
 var Terrain = function () {
 	this._debug = false;
 	this._debug_dat = [];
-	this.map_data = [];
+	this.map_data = {};
 	this.entities = [];
 	this.is_loading = true;
 	this.is_saving = false;
 	this.is_error = false;
 	this.is_popup = false;
+	this.selected_obj = null;
 	this.target_obj = null;
 	this.target_hist = [];
 
@@ -108,11 +109,35 @@ Terrain.prototype.draw = function (xoff, yoff) {
 		for (i=0;i<this.entities.length;i++){
 			var ent = this.entities[i];
 			fill(255,50,50);
+			stroke(0);
+			if(this.selected_obj==ent)fill(70,70,200);
 			if(ent.type == 'NPC'){
 				fill(100,100,200);
+				if(this.selected_obj==ent)fill(70,70,200);
 				rect(ent.x,ent.y-20,20,40);
+			}else if(ent.type=='event'){
+				noFill();
+				stroke(50,200,50);
+				if(this.selected_obj==ent)stroke(50,50,200);
+				beginShape();
+				for(pi=0;pi<ent.poly.length;pi++){
+					vertex(ent.x+ent.poly[pi][0],ent.y+ent.poly[pi][1]);
+				}
+				endShape(CLOSE);
+				if(this.selected_obj==ent){
+					fill(50,200,50);
+					stroke(0);
+					for(pi=0;pi<ent.poly.length;pi++){
+						ellipse(ent.x+ent.poly[pi][0],ent.y+ent.poly[pi][1],5,5);
+					}
+				}
+				stroke(0);
+				fill(200,50,50);
 			}
 			ellipse(ent.x,ent.y,5,5);
+			textSize(7);
+			fill(255);
+			text(ent.type,ent.x+10,ent.y);
 		}
 		pop();
 	}else if(this.is_error){
@@ -135,6 +160,25 @@ Terrain.prototype.new_poly = function () {
 Terrain.prototype.new_obj = function () {
 	terrain.target_obj = {type:'none'};
 	terrain.clickMode = 'place';
+};
+Terrain.prototype.new_event = function () {
+	terrain.target_obj = {
+		type:'event',
+		poly:[
+			[-60,-40],
+			[60,-40],
+			[60,40],
+			[-60,40]
+		],
+		flags:{},
+		text:{}
+	};
+	terrain.target_hist.push(terrain.target_obj);
+	terrain.clickMode = 'place';
+};
+Terrain.prototype.edit_mapData = function () {
+	terrain.target_hist.push(terrain.map_data);
+	terrain.edit_obj();
 };
 Terrain.prototype.edit_obj = function() {
 	var obj = terrain.target_hist[terrain.target_hist.length-1];
@@ -285,13 +329,27 @@ Terrain.prototype.mousePressed = function () {
 					});
 				}
 			}
+			if(this.selected_obj && this.selected_obj.type=='event'){
+				var o = this.selected_obj;
+				for (i=0;i<o.poly.length;i++){
+					var p = o.poly[i];
+					if(dist(o.x+p[0],o.y+p[1],amouseX,amouseY)<=5)results.push({
+						type:'event_poly',
+						poly:o.poly,
+						vertex:p,
+						x:p[0],
+						y:p[1],
+						index:i
+					});
+				}
+			}
 		}
 		if(results.length){
 			console.log(results);
 			this.target_obj = results[0];
 			this.target_hist.push(results[0]);
 			if(this.clickMode=='cut'||this.clickMode=='delete'){
-				if(this.target_obj.type!='poly'){
+				if(['poly','event_poly'].indexOf(this.target_obj.type)==-1){
 					i = this.entities.indexOf(this.target_obj);
 					if(i>=0)this.entities.splice(i,1);
 				}else if(this.clickMode=='delete'){
@@ -318,6 +376,35 @@ Terrain.prototype.mousePressed = function () {
 	}
 };
 Terrain.prototype.mouseDoublePressed = function () {
+	if(this.selected_obj && this.selected_obj.type=='event'){
+		var poly = this.selected_obj.poly;
+		for(i=0; i < poly.length; i++){
+			var c = createVector(poly[i][0],poly[i][1]);
+			var n;
+			if(i+1<poly.length){
+				n = createVector(poly[i+1][0],poly[i+1][1]);
+			}else {
+				n=createVector(poly[0][0],poly[0][1]);
+			}
+			c.add(this.selected_obj.x,this.selected_obj.y);
+			n.add(this.selected_obj.x,this.selected_obj.y);
+			if(collideLineCircle(c.x,c.y,n.x,n.y,amouseX,amouseY,10)){
+				if(dist(c.x,c.y,amouseX,amouseY)<=10)return;
+				if(dist(n.x,n.y,amouseX,amouseY)<=10)return;
+				// console.log('new point');
+				poly.splice(i+1,0,[amouseX-this.selected_obj.x,amouseY-this.selected_obj.y]);
+			}
+		}
+	}
+	this.selected_obj = null;
+	for (i=0;i<this.entities.length;i++){
+		var e = this.entities[i];
+		if(dist(e.x,e.y,amouseX,amouseY)<=5){
+			this.selected_obj = e;
+			this.target_hist.push(e);
+			return;
+		}
+	}
 	for (pi=0;pi<this.poly.length;pi++){
 		var poly = this.poly[pi];
 		for(i=0; i < poly.length; i++){
@@ -325,10 +412,10 @@ Terrain.prototype.mouseDoublePressed = function () {
 			var n = poly[i+1];
 			if(i+1==poly.length)n=poly[0];
 			if(collideLineCircle(c.x,c.y,n.x,n.y,amouseX,amouseY,10)){
-				if(dist(c.x,c.y,amouseX,amouseY)<=10)return;//highlight point
+				if(dist(c.x,c.y,amouseX,amouseY)<=10)return;
 				if(dist(n.x,n.y,amouseX,amouseY)<=10)return;
 				// console.log('new point');
-				poly.splice(i+1,0,createVector(amouseX,amouseY))
+				poly.splice(i+1,0,createVector(amouseX,amouseY));
 			}
 		}
 	}
@@ -340,7 +427,10 @@ Terrain.prototype.loadmap = function (url) {
 	var self = this;
 	loadJSON(url, function (json) {
 		// console.log(json);
-		self.map_data = json.map_data;
+		self.map_data = json.map_data || {};
+		json.entities = json.entities || [];
+		json.npcs = json.npcs || [];
+		json.events = json.events || [];
 		self.poly = [];
 		for (var i = 0;i<json.map_data.vertex.length;i++) {
 			var poly = json.map_data.vertex[i];
@@ -352,16 +442,21 @@ Terrain.prototype.loadmap = function (url) {
 			if(json.map_data.inverted)new_poly.reverse();
 			self.poly.push(new_poly);
 		}
-		for (var i = json.npcs.length - 1; i >= 0; i--) {
+		for (i = json.npcs.length - 1; i >= 0; i--) {
 			var npc = json.npcs[i];
 			npc.type='NPC';
 			self.entities.push(npc);
 		}
-		for (var i = json.entities.length -1;i>=0;i--) {
+		for (i = json.entities.length -1;i>=0;i--) {
 			var ent = json.entities[i];
 			ent.x = ent.pos[0];
 			ent.y = ent.pos[1];
 			self.entities.push(ent);
+		}
+		for (i=0;i<json.events.length;i++){
+			var evt = json.events[i];
+			evt.type = 'event';
+			self.entities.push(evt);
 		}
 		self.is_loading=false;
 	}, function () {
@@ -380,6 +475,7 @@ Terrain.prototype.savemap = function () {
 		map_data:Object.assign({},self.map_data,{vertex:[]}),
 		entities:[],
 		npcs:[],
+		events:[]
 	};
 	for(pi=0;pi<self.poly.length;pi++){
 		var poly = self.poly[pi];
@@ -394,6 +490,9 @@ Terrain.prototype.savemap = function () {
 		if(e.type=='NPC'){
 			e.type=undefined;
 			json.npcs.push(e);
+		}else if(e.type=='event'){
+			e.type=undefined;
+			json.events.push(e);
 		}else{
 			e.pos = [e.x,e.y];
 			e.x=undefined;

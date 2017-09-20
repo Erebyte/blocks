@@ -58,9 +58,11 @@ function setup () {
 		location.href = base+'?m='+map_input.value();
 		// console.log(map_input.value());
 	}));
+	editor_nav.push(make_button('New Event','#game-nav',terrain.new_event));
 	editor_nav.push(make_button('New Poly','#game-nav',terrain.new_poly));
 	editor_nav.push(make_button('New Object','#game-nav',terrain.new_obj));
 	editor_nav.push(make_button('Edit Object','#game-nav',terrain.edit_obj));
+	editor_nav.push(make_button('Edit Map Data','#game-nav',terrain.edit_mapData));
 	// Test //
 }
 
@@ -131,6 +133,10 @@ function mouseDragged(){
 			var obj = terrain.target_obj;
 			obj.vertex.x = obj.x;
 			obj.vertex.y = obj.y;
+		}else if(terrain.target_obj.type=='event_poly'){
+			var obj = terrain.target_obj;
+			obj.vertex[0] = obj.x;
+			obj.vertex[1] = obj.y;
 		}
 	}
 }

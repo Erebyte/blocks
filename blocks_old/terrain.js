@@ -345,16 +345,10 @@ Terrain.prototype.loadmap = function (url) {
 				var c = window[ent.type];
 				entities.push(new c(createVector(ent.pos[0],ent.pos[1]),ent));
 			}
-			// FIX: use lookup not if; else if
-			// if (ent.type == 'Tree') {
-			// 	entities.push(new Tree(createVector(ent.pos[0],ent.pos[1]),null,ent.size));
-			// }else if (ent.type == 'Grass') {
-			// 	entities.push(new Grass(createVector(ent.pos[0],ent.pos[1]),ent.size));
-			// }else if (ent.type == 'House') {
-			// 	entities.push(new House(createVector(ent.pos[0],ent.pos[1])));
-			// }else if (ent.type == 'Tombstone') {
-			// 	entities.push(new Tombstone(createVector(ent.pos[0],ent.pos[1]),ent.typ));
-			// }
+		}
+		for(i=0;i<json.events.length;i++){
+			console.log(json.events[i]);
+			events.push(new GameEvent(json.events[i]));
 		}
 	});
 };
