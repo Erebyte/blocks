@@ -305,7 +305,6 @@ Player.prototype.mouseWheel = function (delta) {
 	this.grapple.retract(delta);
 };
 Player.prototype.mousePressed = function (mx,my) {
-	if (this.flags['check']) {
 		this.flags['checking'].check();
 	}else {
 		this.grapple.grapple(mx,my);
@@ -313,6 +312,9 @@ Player.prototype.mousePressed = function (mx,my) {
 };
 Player.prototype.draw_debug = function () {
 	this.grapple.draw_debug();
+	for(i=events.length-1;i>=0;i--){
+		events[i].draw_debug();
+	}
 };
 Player.prototype.toggleDebug = function () {
 	this._debug = !this._debug;
@@ -404,6 +406,10 @@ Player.prototype.collide = function (vec) {
 				mv = false;
 			}
 		}
+	}
+	for(i=events.length-1;i>=0;i--){
+		var e = events[i];
+		if(e)e.collide(this.x,this.y,this.w,vec.x,vec.y);
 	}
 	if(mv)this.move(vec.x,vec.y,1);
 	return ret;

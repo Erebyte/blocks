@@ -192,477 +192,199 @@
   },
   "entities": [
     {
-      "type": "Tree",
+      "type": "Rockcrab",
       "pos": [
-        802,
-        -497
+        385,
+        464
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rockcrab",
       "pos": [
-        857,
-        -359
+        917,
+        551
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rockcrab",
       "pos": [
-        480,
-        -310
+        574,
+        773
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rockcrab",
       "pos": [
-        500,
-        -459
+        563,
+        559
       ]
     },
     {
-      "type": "House",
+      "type": "Rockcrab",
       "pos": [
-        606,
-        -415
+        -241,
+        297
       ]
     },
     {
-      "type": "Grass",
+      "type": "Rockcrab",
       "pos": [
-        717,
-        -50
-      ],
-      "size": 3
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        827,
-        159
-      ],
-      "size": 3
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        585,
-        93
-      ],
-      "size": 3
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        456,
-        199
-      ],
-      "size": 3
-    },
-    {
-      "type": "Tree",
-      "pos": [
-        575,
-        79
+        -54,
+        523
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rockcrab",
       "pos": [
-        643,
-        -178
+        -291,
+        598
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        246,
-        339
+        313,
+        427
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        -146,
-        291
-      ],
-      "typ": 0
-    },
-    {
-      "type": "Tree",
-      "pos": [
-        29,
-        -327
-      ],
-      "size": 1.5
-    },
-    {
-      "type": "Tree",
-      "pos": [
-        -320,
-        -383
+        63,
+        326
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rock",
       "pos": [
-        309,
-        -402
+        -225,
+        347
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rock",
       "pos": [
-        275,
-        233
+        -235,
+        461
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rock",
       "pos": [
-        -220,
-        223
+        -119,
+        552
       ]
     },
     {
-      "type": "Tree",
+      "type": "Rock",
       "pos": [
-        426,
-        -186
+        264,
+        524
       ]
     },
     {
-      "type": "Tree",
-      "pos": [
-        847,
-        33
-      ]
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        16,
-        -99
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        94,
-        251
-      ],
-      "size": 3
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        140,
-        160
-      ],
-      "size": 10
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        42,
-        -306
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        21,
-        -304
-      ],
-      "size": 4
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        569,
-        240
-      ],
-      "size": 15
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        697,
-        239
-      ],
-      "size": 15
-    },
-    {
-      "type": "House",
+      "type": "Rock",
       "pos": [
         636,
-        166
+        584
       ]
     },
     {
-      "type": "House",
+      "type": "Rock",
       "pos": [
-        671,
-        -67
+        611,
+        614
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        201,
-        388
+        658,
+        667
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        136,
-        374
+        661,
+        622
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rockcrab",
       "pos": [
-        229,
-        484
+        692,
+        601
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        203,
-        556
+        718,
+        572
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        138,
-        498
+        668,
+        482
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        164,
-        454
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        60,
-        442
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        66,
-        357
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        106,
-        400
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -8,
-        381
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -39,
-        465
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        9,
+        698,
         515
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        85,
-        590
+        647,
+        532
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Rock",
       "pos": [
-        34,
-        619
+        617,
+        533
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Post",
       "pos": [
-        -76,
-        605
+        523,
+        656
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Post",
       "pos": [
-        -17,
-        586
+        792,
+        647
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Post",
       "pos": [
-        -181,
-        492
+        777,
+        439
       ]
     },
     {
-      "type": "Tombstone",
+      "type": "Post",
       "pos": [
-        -105,
-        390
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -211,
-        395
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -295,
-        393
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -175,
-        433
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -111,
-        506
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -155,
-        581
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -218,
-        596
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -298,
-        496
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -259,
-        485
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        188,
-        623
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -44,
-        319
-      ]
-    },
-    {
-      "type": "Tombstone",
-      "pos": [
-        -78,
-        397
+        525,
+        444
       ]
     },
     {
       "type": "Grass",
       "pos": [
-        -49,
-        368
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        -159,
-        403
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        41,
-        412
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        -40,
-        422
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        57,
-        520
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        -76,
-        573
-      ],
-      "size": 5
-    },
-    {
-      "type": "Grass",
-      "pos": [
-        -250,
-        552
+        256,
+        440
       ],
       "size": 5
     },
@@ -677,202 +399,556 @@
     {
       "type": "Grass",
       "pos": [
-        256,
-        440
+        -250,
+        552
       ],
       "size": 5
     },
     {
-      "type": "Post",
+      "type": "Grass",
       "pos": [
-        525,
-        444
+        -76,
+        573
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        57,
+        520
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        -40,
+        422
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        41,
+        412
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        -159,
+        403
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        -49,
+        368
+      ],
+      "size": 5
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -78,
+        397
       ]
     },
     {
-      "type": "Post",
+      "type": "Tombstone",
       "pos": [
-        777,
-        439
+        -44,
+        319
       ]
     },
     {
-      "type": "Post",
+      "type": "Tombstone",
       "pos": [
-        792,
-        647
+        188,
+        623
       ]
     },
     {
-      "type": "Post",
+      "type": "Tombstone",
       "pos": [
-        523,
-        656
+        -259,
+        485
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        617,
-        533
+        -298,
+        496
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        647,
-        532
+        -218,
+        596
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        698,
+        -155,
+        581
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -111,
+        506
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -175,
+        433
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -295,
+        393
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -211,
+        395
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -105,
+        390
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -181,
+        492
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -17,
+        586
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -76,
+        605
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        34,
+        619
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        85,
+        590
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        9,
         515
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        668,
-        482
+        -39,
+        465
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        718,
-        572
+        -8,
+        381
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tombstone",
       "pos": [
-        692,
-        601
+        106,
+        400
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        661,
-        622
+        66,
+        357
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        658,
-        667
+        60,
+        442
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
       "pos": [
-        611,
-        614
+        164,
+        454
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tombstone",
+      "pos": [
+        138,
+        498
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        203,
+        556
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        229,
+        484
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        136,
+        374
+      ]
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        201,
+        388
+      ]
+    },
+    {
+      "type": "House",
+      "pos": [
+        671,
+        -67
+      ]
+    },
+    {
+      "type": "House",
       "pos": [
         636,
-        584
+        166
       ]
     },
     {
-      "type": "Rock",
+      "type": "Grass",
       "pos": [
-        264,
-        524
+        697,
+        239
+      ],
+      "size": 15
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        569,
+        240
+      ],
+      "size": 15
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        21,
+        -304
+      ],
+      "size": 4
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        42,
+        -306
+      ],
+      "size": 5
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        140,
+        160
+      ],
+      "size": 10
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        94,
+        251
+      ],
+      "size": 3
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        16,
+        -99
+      ],
+      "size": 5
+    },
+    {
+      "type": "Tree",
+      "pos": [
+        847,
+        33
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tree",
       "pos": [
-        -119,
-        552
+        426,
+        -186
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tree",
       "pos": [
-        -235,
-        461
+        -220,
+        223
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tree",
       "pos": [
-        -225,
-        347
+        275,
+        233
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tree",
       "pos": [
-        63,
-        326
+        309,
+        -402
       ]
     },
     {
-      "type": "Rock",
+      "type": "Tree",
       "pos": [
-        313,
-        427
+        -320,
+        -383
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        -291,
-        598
+        29,
+        -327
+      ],
+      "size": 1.5
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        -146,
+        291
+      ],
+      "typ": 0
+    },
+    {
+      "type": "Tombstone",
+      "pos": [
+        246,
+        339
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        -54,
-        523
+        643,
+        -178
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        -241,
-        297
+        575,
+        79
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Grass",
       "pos": [
-        563,
-        559
+        456,
+        199
+      ],
+      "size": 3
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        585,
+        93
+      ],
+      "size": 3
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        827,
+        159
+      ],
+      "size": 3
+    },
+    {
+      "type": "Grass",
+      "pos": [
+        717,
+        -50
+      ],
+      "size": 3
+    },
+    {
+      "type": "House",
+      "pos": [
+        606,
+        -415
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        574,
-        773
+        500,
+        -459
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        917,
-        551
+        480,
+        -310
       ]
     },
     {
-      "type": "Rockcrab",
+      "type": "Tree",
       "pos": [
-        385,
-        464
+        857,
+        -359
+      ]
+    },
+    {
+      "type": "Tree",
+      "pos": [
+        802,
+        -497
       ]
     }
   ],
   "npcs": [
+    {
+      "name": "Yessica",
+      "surname": "Jessivich",
+      "age": 10,
+      "x": 517,
+      "y": 291,
+      "gender": "girl",
+      "flags": {},
+      "attribs": {
+        "speed": 3
+      },
+      "text": {
+        "default": [
+          [
+            "Im coming with you!",
+            {
+              "joinparty": {},
+              "setflag": {
+                "text_state": "follow"
+              }
+            }
+          ]
+        ],
+        "follow": [
+          [
+            "I like to follow you <3"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "Aurthur",
+      "surname": "Butthole",
+      "age": 15,
+      "x": 741,
+      "y": 287,
+      "gender": "boy",
+      "flags": {},
+      "text": {
+        "default": [
+          [
+            "Hi, how's it goin'\nI like the way you walk",
+            "Wanna be friends?",
+            {
+              "yesNo": {
+                "case": [
+                  [
+                    "Really!?\nYou will?",
+                    {
+                      "joinparty": {},
+                      "setflag": {
+                        "text_state": "follow"
+                      }
+                    }
+                  ],
+                  [
+                    "oh...\n\n...okay"
+                  ]
+                ],
+                "default": 1
+              }
+            }
+          ]
+        ],
+        "follow": [
+          [
+            "If you talk to me when I'm done then I will join you on your adventure..."
+          ]
+        ],
+        "#promice": [
+          [
+            "You should help her?\nEh..?"
+          ]
+        ]
+      }
+    },
     {
       "name": "Suzi",
       "surname": "Harrolds",
@@ -959,82 +1035,43 @@
           ]
         ]
       }
-    },
+    }
+  ],
+  "events": [
     {
-      "name": "Aurthur",
-      "surname": "Butthole",
-      "age": 15,
-      "x": 741,
-      "y": 287,
-      "gender": "boy",
-      "flags": {},
-      "text": {
-        "default": [
-          [
-            "Hi, how's it goin'\nI like the way you walk",
-            "Wanna be friends?",
-            {
-              "yesNo": {
-                "case": [
-                  [
-                    "Really!?\nYou will?",
-                    {
-                      "joinparty": {},
-                      "setflag": {
-                        "text_state": "follow"
-                      }
-                    }
-                  ],
-                  [
-                    "oh...\n\n...okay"
-                  ]
-                ],
-                "default": 1
-              }
-            }
-          ]
+      "poly": [
+        [
+          -60,
+          -40
         ],
-        "follow": [
-          [
-            "If you talk to me when I'm done then I will join you on your adventure..."
-          ]
+        [
+          60,
+          -40
         ],
-        "#promice": [
-          [
-            "You should help her?\nEh..?"
-          ]
+        [
+          60,
+          40
+        ],
+        [
+          -60,
+          40
         ]
-      }
-    },
-    {
-      "name": "Yessica",
-      "surname": "Jessivich",
-      "age": 10,
-      "x": 517,
-      "y": 291,
-      "gender": "girl",
+      ],
       "flags": {},
-      "attribs": {
-        "speed": 3
-      },
       "text": {
         "default": [
           [
-            "Im coming with you!",
+            "Event triggered!",
             {
-              "joinparty": {},
               "setflag": {
-                "text_state": "follow"
+                "#promice": true
               }
             }
           ]
-        ],
-        "follow": [
-          [
-            "I like to follow you <3"
-          ]
         ]
-      }
+        },
+      "x": 45,
+      "y": -154
     }
   ]
 }

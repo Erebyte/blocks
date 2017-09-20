@@ -125,6 +125,20 @@ Windows.prototype.draw = function () {
 	}
 };
 Windows.prototype.newWindow = function (strs, x, y, w, h) {
+	var objCallback = function (obj_) {
+		return function (win) {
+			for (var func in obj_) {
+				if (typeof windows.flagFunctions[func] == 'function') {
+					windows.flagFunctions[func](null, win, obj_[func]);
+				}
+			}
+		};
+	};
+	for (var j=0;j<strs.length;j++) {
+		if (typeof strs[j] == 'object' && strs[j] !== null) {
+			strs[j] = objCallback(strs[j]);
+		}
+	}
 	var id = ord++;
 	var wnds = this;
 	var fl = 0.5;

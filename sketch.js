@@ -14,6 +14,7 @@ var windows;
 var camera;
 var draw_q = [];
 var entities = [];
+var events = [];
 var base_url = base_url || '.';
 
 

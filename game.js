@@ -175,6 +175,57 @@ GameEntity.prototype._move = function (x, y) {
 GameEntity.prototype.move = GameEntity.prototype._move;
 
 
+
+// -=-=- Game Object -=-=- //
+// 
+// Args:
+// ----
+// 
+// entity_data:{
+//		[flags:<obj(dict)>]
+// }
+//
+var GameEvent = function (entity_data) {
+	GameObject.call(this,entity_data);
+	this.poly = [];
+	for(i=0;i<entity_data.poly.length;i++){
+		this.poly[i]=createVector(entity_data.poly[i][0],entity_data.poly[i][1]);
+	}
+	this.is_active = true;
+	this.text = entity_data.text;
+	this.x = entity_data.x || 0;
+	this.y = entity_data.y || 0;
+};
+GameEvent.prototype = Object.create(GameObject.prototype);
+
+// -=- Game Object Functions -=- //
+GameEvent.prototype.draw_debug = function () {
+	if(this.is_active){
+		push();
+		noFill();
+		stroke(50,200,50);
+		translate(width/2-camera.x+this.x, height/2-camera.y+this.y);
+		beginShape();
+		for(i=this.poly.length-1;i>=0;i--){
+			vertex(this.poly[i].x,this.poly[i].y);
+		}
+		endShape(CLOSE);
+		pop();
+	}
+};
+GameEvent.prototype.collide = function (px,py,pw,vx,vy) {
+	if(this.is_active && collideCirclePoly(px+vx-this.x,py+vy-this.y,pw,this.poly)){
+		// console.log('collide',);
+		this.trigger();
+	}
+
+};
+GameEvent.prototype.trigger = function () {
+	windows.newSimple(this.text.default[0]||['poopy']);
+	this.is_active=false;
+};
+
+
 // -=- AI -=- //
 //
 //
@@ -291,7 +342,7 @@ Game.prototype.draw_debug = function () {
 	line(width-t,30,width-t,50); //100-60fps=40
 	stroke(200);
 	beginShape();
-	for (var i = game._fps_hystory.length - 1; i >= 0; i--) {
+	for (i = game._fps_hystory.length - 1; i >= 0; i--) {
 		var fps = game._fps_hystory[i];
 		fps = map(fps,0,100,100,0);
 		vertex(width-i*2,fps);
@@ -300,7 +351,7 @@ Game.prototype.draw_debug = function () {
 	//
 	pop();
 
-	for (var i = this.debug_cb.length - 1; i >= 0; i--) {
+	for (i = this.debug_cb.length - 1; i >= 0; i--) {
 		this.debug_cb[i].draw_debug();
 	}
 	this.debug_cb = [];

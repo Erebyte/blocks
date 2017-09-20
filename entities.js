@@ -160,6 +160,141 @@ NPC.prototype.get_text = function () {
 
 
 
+// -=-=-=-=- NPC -=-=-=- 
+//
+// Args:
+// -----
+//
+// data:{
+//		x:pos.x
+//		y:pos.y
+//		gender:'male'||'female'||'boy'||'girl'
+//		name:<string>
+//		surname:<string>
+//		[w:width]
+//		[h:height]
+//		[flags:<obj(dict)>]
+// }
+//
+var Cultist = function (data) {
+	GameEntity.call(this, data);
+
+	this.gender = data.gender;
+	this.npc_name = data.name + ' ' + data.surname;
+	this.w = data.w || floor(random(20, 25));
+	this.h = data.h || floor(random(35, 40));
+
+	this.txt_ord = 0;
+
+	this.flags = Object.assign({}, data.flags);
+	this.attribs = Object.assign({
+			'speed':2
+		}, this.attribs);
+
+	var h = data.hue || random(360);
+	var s = 0;
+	var b = 0;
+	if (this.gender == 'male') {
+		s = random(20, 50);
+		b = random(15, 50);
+		this.h+=floor(random(4));
+	}else if (this.gender == 'female') {
+		s = random(20, 50);
+		b = random(50, 85);
+		this.w-=floor(random(5));
+		this.h+=floor(random(3));
+	}else if (this.gender == 'boy') {
+		s = random(50, 80);
+		b = random(15, 50);
+		b+=15;
+		this.h-=floor(random(5))+5;
+	}else if (this.gender == 'girl') {
+		s = random(50, 80);
+		b = random(50, 85);
+		b+=15;
+		this.h-=floor(random(5))+5;
+	}
+	this.color_h = h;
+	this.color_s = s;
+	this.color_b = b;
+
+	this.debug_data = [];
+};
+Cultist.prototype = Object.create(GameEntity.prototype);
+
+// -=- Functions -=- //
+Cultist.prototype.draw = function () {
+	colorMode(HSB, 360, 100, 100);
+	fill(this.color_h, this.color_s, this.color_b);
+	rect(this.x-this.w/2, this.y-this.h, this.w, this.h);
+	colorMode(RGB, 255);
+};
+Cultist.prototype.update = function () {
+	var vec = this.AI.movePathVector();
+	if(vec && !this.flags['talking']) this.move(vec.x,vec.y);
+};
+Cultist.prototype.move = function (x, y) {
+	var spd = this.attribs['speed'] + (this.flags['spd_buf'] || 0);
+	this.x += x*spd;
+	this.y += y*spd;
+};
+Cultist.prototype.check = function () {
+	if (this.flags['talking'] !== true) {
+		var strs = this.get_text();
+		var self = this;
+		var win = windows.newSimple(strs, width/2, height*0.8, width*0.9, height/2*0.60, function (){self.flags['talking'] = false;});
+		this.flags['talking'] = true;
+	}
+};
+Cultist.prototype.do_check = function (p) {
+	if (collidePointCircle(this.x,this.y,p.x,p.y,this.w/2+40)) {
+		if (p.flags['check'] && p.flags['checking'] != this) {
+			var old = p.flags['checking'];
+			var old_dist = dist(p.x, p.y, old.x, old.y);
+			var cur_dist = dist(p.x, p.y, this.x, this.y);
+			if (cur_dist < old_dist) {
+				p.flags['checking'] = this;
+			}
+		}else {
+			p.flags['check'] = true;
+			p.flags['checking'] = this;
+		}
+	}
+};
+Cultist.prototype.get_text = function () {
+	var index = this.txt_ord;
+	var ret_text;
+	var ret_prop;
+	var self = this;
+	if (this.flags['override_text']) return [this.flags['override_text']];
+	try {
+		for (var prop in this.data.text) {
+			if (prop == 'default' || this.flags['text_state'] === prop) {
+				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
+			}
+			if (prop.slice(0,1)=='#' && game.flags[prop.slice(1)] === true) {
+				ret_text = this.data.text[prop][index];
+				ret_prop = prop;
+			}
+		}
+		if(index >= this.data.text[ret_prop].length) {
+			this.txt_ord = 0;
+			return this.get_text();
+		}
+		if(this.flags['repeatln']!==true) {
+			this.txt_ord++;
+			if(index >= this.data.text[ret_prop].length-1)this.txt_ord = 0;
+		}
+		return ret_text || ['Default text.'];
+	}catch (err) {
+		console.log(err);
+		return ['Default text.'];
+	}
+};
+
+
+
 // -=-=-=-=- Rat -=-=-=- 
 //
 //
