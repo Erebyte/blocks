@@ -1,0 +1,14 @@
+{
+	"conf" : {
+		"title" : "Collision Resolution Testing Env.",
+		"desc" : "used to test collision resolution etc...",
+		"embeded" : false,
+		"enable_p5" : false
+	},
+	"scripts" : [
+		"./p5.collide2d.js",
+		"./collideResolver.js",
+		"./game.js",
+		"./sketch.js"
+	]
+}
