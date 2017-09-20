@@ -18,7 +18,7 @@ var doublePressedSpeed = 30;
 var mouseDoublePressed = null;
 //
 var base_url = base_url || '.';
-var game_url = game_url || './';
+var game_url;
 //
 var camera;
 var sound;
