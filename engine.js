@@ -18,6 +18,7 @@ var doublePressedSpeed = 30;
 var mouseDoublePressed = null;
 //
 var base_url = base_url || '.';
+var game_url = game_url || './';
 //
 var camera;
 var sound;
@@ -2138,7 +2139,7 @@ var Terrain = function () {
 };
 Terrain.prototype.loadMap = function (url, parent) {
 	if(!url)return;
-	url = base_url+'/maps/'+url+'.json';
+	url = game_url+'/maps/'+url+'.json';
 	if(this.url_table[url])return this.url_table[url];
 	var self = this;
 	var id = this._map_ord++;
@@ -2175,7 +2176,7 @@ Terrain.prototype.loadMap = function (url, parent) {
 		
 		//music
 		if(json.music){
-			data.music = sound.loadSound({track:base_url+json.music});
+			data.music = sound.loadSound({track:game_url+json.music});
 		}else{
 			data.music = null;
 		}
