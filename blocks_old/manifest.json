@@ -6,10 +6,14 @@
 		"enable_p5" : true
 	},
 	"scripts" : [
-		"./p5.sound.js",
 		"./p5.collide2d.js",
-		"./engine.js",
 		"./game.js",
+		"./terrain.js",
+		"./windows.js",
+		"./camera.js",
+		"./entities.js",
+		"./buildings.js",
+		"./player.js",
 		"./sketch.js"
 	]
 }

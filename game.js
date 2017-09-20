@@ -1,365 +1,407 @@
-/*
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= //
-//				-=- Buildings -=-			//
-//											//
-// all buildings must be a subclass of		//
-// BuildingEntity							//
-//											//
-// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=	//
-*/
+// all game specific engine things
 
-
-// -=-=- Logos -=-=- //
-// 
-// Handles drawing the logos.
-//
-var Logos = function () {
-	this.logos = [
-		{
-			title:"Erebyte",
-			frame:0,
-			anm:function () {
-				if (this.frame > 50) {
-					return true;
+Game.prototype._states = {
+	init:'logo',
+	logo:{
+		logos:['erebyte','title'],
+		current:0,
+		frame:0,
+		FSM:new SimpleFSM({_states:{
+			init:'erebyte',
+			erebyte:{Execute:function(){}},
+			title:{Execute:function(){}}
+		}}),
+		Execute:function(){
+			// this.data.FSM.Execute();
+			push();
+			background(30);
+			noStroke();
+			fill(100);
+			textFont("Georgia");
+			textSize(20);
+			var title = this.data.logos[this.data.current];
+			text(title+"_frame_"+this.data.frame, 20, 20);
+			pop();
+			//
+			if(this.data.frame==50){
+				if(this.data.logos[this.data.current+1]){
+					this.data.FSM.setState(this.data.logos[++this.data.current]);
+					this.data.frame = 0;
+				}else{
+					this.FSM.setState('menu');
 				}
-				this.frame++;
-			},
-			draw:function () {
-				push();
-				noStroke();
-				fill(100);
-				textFont("Georgia");
-				textSize(20);
-				text(this.title+"_frame_"+this.frame, 20, 20);
-				pop();
+			}
+			this.data.frame++;
+		}
+	},
+	menu:{
+		// Enter:function(){},
+		Execute:function(){
+			background(50);
+			// display text
+			push();
+			noStroke();
+			fill(100);
+			textAlign(CENTER);
+			textFont("Georgia");
+			textSize(80);
+			text("Blocks!", width/2, height/4);
+			textSize(40);
+			text('Click to start', width/2, height/2);
+			textSize(12);
+			text(VERSION, width*0.9, height*0.95);
+			pop();
+			// console.log('menu');
+			// this.FSM.setState('game');
+		},
+		KeyPressed:function(state, data){
+			if(data.type=='Mouse')state.FSM.setState('pregame');
+		}
+	},
+	pregame:{
+		Enter:function(){
+			this.data.color = [70,80,70]; //hsb
+			this.data.gender = 0.5;
+			//
+			windows.newWindow({strs:["W+S to swap genders\nA+D to change color","Make You..."],textitrdef:-1});
+		},
+		Execute:function(){
+			// -=- Draw -=- //
+			background(30);
+			//
+			push();
+			noStroke();
+			fill(100);
+			textAlign(CENTER);
+			textFont("Georgia");
+			textSize(40);
+			text("Create you!", width/2, height*0.2);
+			textSize(25);
+			fill(200);
+			text(floor(this.data.gender*100), width*0.75, height*0.35);
+			text(this.data.color[0], width*0.75, height*0.50);
+			colorMode(HSB, 360, 100, 100);
+			rectMode(CENTER);
+			var col = this.data.color;
+			fill(col[0],col[1],col[2]);
+			rect(width/2, height/2, 100, 200);
+			colorMode(RGB, 255);
+			pop();
+			//
+			windows.update();
+			windows.draw();
+		},
+		KeyPressed:function(state,data){
+			if(data.type=='Key'){
+				if (data.key == 'W' ) {
+					state.data.gender += 0.05;
+					if(state.data.gender>1)state.data.gender=1;
+					state.data.color[1]=map(state.data.gender,0,1,60,70);
+					state.data.color[2]=map(state.data.gender,0,1,40,80);
+				}else if( data.key == 'S') {
+					state.data.gender -= 0.05;
+					if(state.data.gender<0)state.data.gender=0;
+					state.data.color[1]=map(state.data.gender,0,1,60,70);
+					state.data.color[2]=map(state.data.gender,0,1,40,80);
+				}else if (data.key == 'A') {
+					state.data.color[0] -= 5;
+					state.data.color[0] += 360;
+					state.data.color[0] %= 360;
+				}else if (data.key == 'D') {
+					state.data.color[0] += 5;
+					state.data.color[0] %= 360;
+				}else if (data.key == ' ') {
+					entities.refresh();
+				}
+			}else if(data.type=='Mouse'){
+				if(windows.open_window){
+					windows.keyPressed(data);
+				}else{
+					state.FSM.setState('game', {
+						gender:state.data.gender,
+						color:state.data.color
+					});
+				}
+			}
+		}
+	},
+	game:{
+		Enter:function(args){
+			//
+			if(args){
+				//set player atribs
+				if(args.color)player.color = args.color;
+				if(args.gender)player.attribs.gender = args.gender;
+			}
+			terrain._changeMap(terrain.loadMap('test'));
+		},
+		Execute:function(){
+			// -=- Draw -=- //
+			background(100);
+			//
+			entities.update();
+			ambience.update();
+			// terrain.update();
+			windows.update();
+			camera.update();
+			//
+			push();
+			camera.apply_transition();
+			terrain.draw();
+			entities.draw();
+			pop();
+			ambience.drawLight();
+			windows.draw();
+			//
+			game.debug();
+		},
+		KeyPressed:function(state, data){
+			if(windows.open_window){
+				windows.keyPressed(data);
+			}else{
+				player.keyPressed(data);
+				if(data.type=='Key'){
+					console.log(data.key);
+					if(data.key=='E') windows.newMenu();
+					if(data.key=='1') game.toggleDebug();
+					if(data.key=='2') sound.toggleDebug();
+					if(data.key==' ') entities.refresh();
+				}
+			}
+		}
+	}
+};
+
+Game.prototype._quickload = function () {
+	this.FSM.setState('game');
+};
+
+//
+Windows.prototype._soundData = Object.assign({
+	//
+},Windows.prototype._soundData);
+//
+Windows.prototype.newMenu = function () {
+	if(this.open_menu)return;
+	this.open_menu = true;
+	var txtWin = windows.newWindow({
+		y:height*0.15,
+		h:height*0.2,
+		strs:['This is the menu,\nit is currently empty.'],
+		keyPressed:null
+	});
+
+	var sel = windows.newSelector({
+		x:width*0.15,
+		strs:['Party','Items','Options','Other','Exit'],
+		keyPressed:function(data){
+			if(data.type == 'Mouse'){
+				this.do_selection();
 			}
 		},
-		{
-			title:"Title",
-			frame:0,
-			anm:function () {
-				if (this.frame > 50) {
-					return true;
-				}
-				this.frame++;
-			},
-			draw:function () {
-				push();
-				noStroke();
-				fill(100);
-				textFont("Georgia");
-				textSize(20);
-				text(this.title+"_frame_"+this.frame, 20, 20);
-				pop();
+		callback:function(i){
+			windows._rmKeyPressed(sel);
+			windows.focus(sel, false);
+			switch(i){
+				case 0: //party
+					windows._menu_party(sel);
+					break;
+				case 1: //items
+					windows._menu_items(sel);
+					break;
+				case 2: //options
+					windows.newSelector({
+						strs:['Debug','Credits','Audio','Settings','Exit'],
+						callback:function(oi){
+							if(oi<0)oi=this.strs.length-1;
+							switch(oi){
+								case 0: //debug
+									windows.newWindow({
+										x:width*0.6,
+										y:height*0.6,
+										w:width*0.7,
+										h:height*0.6,
+										strs:['To toggle debug press:\n  "1" for debugMode\n  "2" for audio\n  "3" for camera\n  "4" for terrain'],
+										unload:function(){
+											windows._addKeyPressed(sel);
+											windows.focus(sel);
+										}
+									});
+									break;
+								case 1: //credits
+									windows._menu_credits(sel);
+									break;
+								case 2: // Audio
+									windows._menu_audio(sel);
+									break;
+								case 3: // Settings
+									windows._menu_settings(sel);
+									break;
+								default:
+								case 3: //exit
+									windows._addKeyPressed(sel);
+									windows.focus(sel);
+									break;
+							}
+						}
+					});
+					break;
+				case 3: //other
+					windows._addKeyPressed(sel);
+					windows.focus(sel);
+					break;
+				default:
+				case 4: //exit
+					windows.windows[txtWin].close();
+					this.close();
+					windows.open_menu = false;
+					break;
 			}
 		}
-	];
-	this.current = 0;
-
-};
-// Logo Functions //
-Logos.prototype.update = function () {
-	if (this.current < this.logos.length) {
-		this.animate();
-	}else {
-		game.setGamestate("startmenu");
-	}
-};
-Logos.prototype.draw = function () {
-	if (this.current < this.logos.length) {
-		this.logos[this.current].draw();
-	}
-};
-Logos.prototype.animate = function () {
-	if (this.logos[this.current].anm() === true) {
-		this.current++;
-	}
+	});
 };
 
 
-// -=-=- Game Object -=-=- //
-// 
-// Args:
-// ----
-// 
-// entity_data:{
-//		[flags:<obj(dict)>]
-// }
-//
-var GameObject = function (entity_data) {
-	this.flags = entity_data.flags || {};
-};
-// -=- Game Object Functions -=- //
-GameObject.prototype.remove = function () {
-	// remove sudo function //
-};
-GameObject.prototype.getFlag = function (flag) {
-	return this.flags[flag];
-};
-GameObject.prototype.setFlag = function (flag, value) {
-	this.flags[flag] = value;
-};
 
 
-// -=-=- Game Entity -=-=- //
-// 
-// Args:
-// ----
-// 
-// entity_data:{
-//		...(see 'GameObject')
-//		[data:<obj(dict)>]
-//		[x:<int>] (default:0)
-//		[y:<int>] (default:0)
-//		[attribs:<obj(dict)>]
-// }
-//
-var GameEntity = function (entity_data) {
-	GameObject.call(this, entity_data);
-
-	this.AI = new AI(this);
-	
-	this.data = entity_data || {};
-	this.x = entity_data.x || 0;
-	this.y = entity_data.y || 0;
-	this.z = entity_data.z || 0;
-
-	this.attribs = entity_data.attribs || {};
-};
-GameEntity.prototype = Object.create(GameObject.prototype);
-
-// -=- Game Entity Functions -=- //
-GameEntity.prototype.getPosition = function () {
-	return createVector(this.x,this.y,this.z);
-};
-GameEntity.prototype.setAttribute = function (attr, value) {
-	this.attribs[attr] = value;
-};
-GameEntity.prototype.setAttr = GameEntity.prototype.setAttribute;
-GameEntity.prototype.getAttribute = function (attr) {
-	return this.attribs[attr];
-};
-GameEntity.prototype.getAttr = GameEntity.prototype.getAttribute;
-GameEntity.prototype.animate = function () {
-	if (this.anm) {
-		this.anm();
-	}
-};
-GameEntity.prototype.collide = function () {return false;};
-GameEntity.prototype._update = function () {
-	if(this.flags._move_vector){
-		var v = this.flags._move_vector;
-		this.x+=v.x;
-		this.y+=v.y;
-		this.z+=v.z;
-		if(this.z<0)this.z=0;
-		if(this.flags.gravity){
-			this.flags._move_vector.add(createVector(0,0,-0.5));
-		}
-		if(this.z===0 && this.flags.friction){
-			var vec = this.flags._move_vector.copy();
-			vec.z = 0;
-			vec.mult(-1);
-			vec.limit(2);
-			this.flags._move_vector.add(vec);
-		}
-	}
-};
-GameEntity.prototype.update = GameEntity.prototype._update;
-GameEntity.prototype._move = function (x, y) {
-	var spd = (this.attribs['speed'] || 0) + (this.flags['spd_buf'] || 0);
-	this.x += x*spd;
-	this.y += y*spd;
-	if(player.grapple.target_obj == this)player.grapple.pos = this.getPosition();
-};
-GameEntity.prototype.move = GameEntity.prototype._move;
+//entities //
 
 
 
-// -=-=- Game Object -=-=- //
-// 
-// Args:
-// ----
-// 
-// entity_data:{
-//		[flags:<obj(dict)>]
-// }
-//
-var GameEvent = function (entity_data) {
-	GameObject.call(this,entity_data);
-	this.poly = [];
-	for(i=0;i<entity_data.poly.length;i++){
-		this.poly[i]=createVector(entity_data.poly[i][0],entity_data.poly[i][1]);
-	}
-	this.is_active = true;
-	this.text = entity_data.text;
-	this.x = entity_data.x || 0;
-	this.y = entity_data.y || 0;
-};
-GameEvent.prototype = Object.create(GameObject.prototype);
-
-// -=- Game Object Functions -=- //
-GameEvent.prototype.draw_debug = function () {
-	if(this.is_active){
-		push();
-		noFill();
-		stroke(50,200,50);
-		translate(width/2-camera.x+this.x, height/2-camera.y+this.y);
-		beginShape();
-		for(i=this.poly.length-1;i>=0;i--){
-			vertex(this.poly[i].x,this.poly[i].y);
-		}
-		endShape(CLOSE);
-		pop();
-	}
-};
-GameEvent.prototype.collide = function (px,py,pw,vx,vy) {
-	if(this.is_active && collideCirclePoly(px+vx-this.x,py+vy-this.y,pw,this.poly)){
-		// console.log('collide',);
-		this.trigger();
-	}
-
-};
-GameEvent.prototype.trigger = function () {
-	windows.newSimple(this.text.default[0]||['poopy']);
-	this.is_active=false;
-};
-
-
-// -=- AI -=- //
+// -=- Posts -=- //
 //
 //
-var AI = function (parent) {
-	this.parent = parent;
-};
-AI.prototype.getPathDestination = function () {
-	if (this.parent.flags['do_move']) {
-		return this.parent.flags['move_path'][this.parent.flags['move_path'].length-1];
-	}else {
-		return [this.parent.x,this.parent.y];
-	}
-};
-AI.prototype.pathPush = function (value, cb) {
-	if (this.parent.flags['move_path']) {
-		this.parent.flags['move_path'].push(value);
-	}else {
-		this.parent.flags['do_move'] = true;
-		this.parent.flags['move_cur'] = 0;
-		this.parent.flags['move_path'] = [value];
-		this.parent.flags['move_cb'] = cb || function () {};
-	}
-};
-AI.prototype.clearPath = function () {
-	this.parent.flags['do_move'] = false;
-	this.parent.flags['move_path'] = null;
-	this.parent.flags['move_cur'] = null;
-	this.parent.flags['move_cb'] = null;
-};
-AI.prototype.movePathVector = function () {
-	if(this.parent.flags['do_move'] && this.parent.flags['move_path']) {
-		if(!this.parent.flags['move_cur'])this.parent.flags['move_cur'] = 0;
-		var path = this.parent.flags['move_path'];
-		var next = path[this.parent.flags['move_cur']];
-		var min_dist = this.parent.attribs['speed'] || 1 + (this.parent.flags['spd_buf'] || 0);
-		if(dist(this.parent.x, this.parent.y, next[0], next[1]) < min_dist) next = path[++this.parent.flags['move_cur']];
-
-		if (next) {
-			var vec = createVector(next[0]-this.parent.x, next[1]-this.parent.y);
-			vec.normalize();
-
-			// debug code
-			var self = this;
-			game.debug_cb.push({draw_debug:function () {
-				if(!self.parent.flags['do_move']) return;
-				push();
-				translate(width/2-camera.x, height/2-camera.y);
-				noFill();
-				stroke(0,0,255);
-				beginShape();
-				vertex(self.parent.x, self.parent.y);
-				// console.log(self.parent);
-				for (var i = self.parent.flags['move_cur']; i < self.parent.flags['move_path'].length; i++) {
-					v = self.parent.flags['move_path'][i];
-					vertex(v[0],v[1]);
-				}
-				endShape();
-				pop();
-			}});
-
-			return vec;
-		}else {
-			this.parent.flags['do_move'] = false;
-			this.parent.flags['move_path'] = null;
-			this.parent.flags['move_cur'] = null;
-			this.parent.flags['move_cb']();
-			this.parent.flags['move_cb'] = null;
-		}
-	}
-};
-
-
-
-/* // -=-=- Main Game Object -=-=- // */
-// 
-// Main Game Object...
-//
-var Game = function () {
-	this.gamestate = 'logo';
-	this.debug_mode = false;
-	this.debug_cb = [];
-	this._logos = new Logos();
-	this._fps_hystory = [];
-	
-	this.flags = {
-		"flag" : true
-	};
-};
-// -=- Game Functions -=- //
-Game.prototype.update = function () {
-	if(this.debug_mode) {
-		this._fps_hystory.push(frameRate());
-		if (this._fps_hystory.length>200) {
-			this._fps_hystory = this._fps_hystory.slice(1);
-		}
-	}
-};
-Game.prototype.draw_debug = function () {
-	push();
-	translate(0,10);
-	textFont("Georgia");
-	textSize(10);
-	fill(200);
-	text("Debug Mode",10,20);
-	text("e:"+draw_q.length+'/'+entities.length,10,40);
-	text("p:("+Math.floor(player.x)+','+Math.floor(player.y)+','+Math.floor(player.z)+")",10,50);
-	
-	// FPS 
-	text("FPS:"+Math.floor(frameRate()), width-400, 20);
-	noFill();
-	stroke(150,0,0);
-	line(width-400,40,width,40); //100-60fps=40
-	var t = game._fps_hystory.length*2;
-	line(width-t,30,width-t,50); //100-60fps=40
-	stroke(200);
-	beginShape();
-	for (i = game._fps_hystory.length - 1; i >= 0; i--) {
-		var fps = game._fps_hystory[i];
-		fps = map(fps,0,100,100,0);
-		vertex(width-i*2,fps);
-	}
-	endShape();
+var Post = function (data) {
+	GameEntity.call(this,data);
 	//
-	pop();
+	this.h = random(20,30);
+	this.sway = random(-5,5);
+	//
+	this.img_buffer = createGraphics(30,50);
+	this.buf_offset = createVector(15,40);
+	this.refresh();
+	//
+	// this.flags.buffer_debug = true;
+};
+Post.prototype = Object.create(GameEntity.prototype);
+//
+Post.prototype.draw = function () {
+	this._draw();
+};
+Post.prototype.refresh = function () {
+	//
+	var ofs = this.buf_offset.copy();
+	var ps = [
+		createVector(ofs.x-10,ofs.y+6),
+		createVector(ofs.x-10-this.sway/2,ofs.y-6),
+		createVector(ofs.x+10-this.sway/2,ofs.y-6),
+		createVector(ofs.x+10,ofs.y+6)
+	];
+	this.img_buffer.fill(120);
+	this.img_buffer.quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+	
+	ps = [
+		createVector(ofs.x-5,ofs.y),
+		createVector(ofs.x-5-this.sway,ofs.y-this.h-this.sway),
+		createVector(ofs.x+5-this.sway,ofs.y-this.h),
+		createVector(ofs.x+5,ofs.y)
+	];
+	this.img_buffer.fill(86, 63, 41);
+	this.img_buffer.quad(ps[0].x,ps[0].y,ps[1].x,ps[1].y,ps[2].x,ps[2].y,ps[3].x,ps[3].y);
+};
+Post.prototype.grapple = function (data) {
+	console.log('hit');
+};
 
-	for (i = this.debug_cb.length - 1; i >= 0; i--) {
-		this.debug_cb[i].draw_debug();
+
+
+// -=- TombStone -=- ///
+//
+//
+var Tombstone = function (data) {
+	GameEntity.call(this,data);
+	//
+	this.col = floor(random(60,120));
+	this.w = random(17,22);
+	this.h = random(25,30);
+	this.sway = random(-this.w/4,this.w/4);
+	//
+	this.typ = data.typ||random([1,2,3,4]);
+	//
+	this.img_buffer = createGraphics(60,this.h*2+20);
+	this.buf_offset = createVector(30,this.h*2+15);
+	this.refresh();
+	//
+	// this.flags.buffer_debug = true;
+};
+Tombstone.prototype = Object.create(GameEntity.prototype);
+//
+Tombstone.prototype.draw = function () {
+	this._draw();
+};
+Tombstone.prototype.refresh = function () {
+	var ofs = this.buf_offset.copy();
+	var p1 = createVector(ofs.x-this.w/2,ofs.y);
+	var p2 = createVector(ofs.x-this.w/2+this.sway-5,ofs.y-this.h-this.sway);
+	var p3 = createVector(ofs.x+this.w/2+this.sway+5,ofs.y-this.h+this.sway);
+	var p4 = createVector(ofs.x+this.w/2,ofs.y);
+	//
+	this.img_buffer.fill(this.col);
+	switch(this.typ){
+		default:
+		case 1:
+			this.img_buffer.quad(p1.x,p1.y,p2.x,p2.y,p3.x,p3.y,p4.x,p4.y);
+			break;
+		case 2:
+			this.img_buffer.beginShape();
+			this.img_buffer.vertex(p1.x,p1.y);
+			this.img_buffer.vertex(p2.x,p2.y);
+			this.img_buffer.vertex(ofs.x+this.sway*2,ofs.y-this.h-10);
+			this.img_buffer.vertex(p3.x,p3.y);
+			this.img_buffer.vertex(p4.x,p4.y);
+			this.img_buffer.endShape(CLOSE);
+			break;
+		case 3:
+			var v1 = p5.Vector.sub(p2,p1);
+			var v2 = p5.Vector.sub(p3,p4);
+			v1.mult(0.6);
+			v2.mult(0.6);
+			var p5_ = p5.Vector.add(p2,v1);
+			var p6 = p5.Vector.add(p3,v2);
+			this.img_buffer.beginShape();
+			this.img_buffer.vertex(p1.x,p1.y);
+			this.img_buffer.vertex(p2.x,p2.y);
+			this.img_buffer.bezierVertex(p5_.x,p5_.y,p6.x,p6.y,p3.x,p3.y);
+			this.img_buffer.vertex(p4.x,p4.y);
+			this.img_buffer.endShape(CLOSE);
+			break;
+		case 4:
+			this.img_buffer.beginShape();
+			this.img_buffer.vertex(p1.x,p1.y);
+			this.img_buffer.vertex(p2.x,p2.y);
+			this.img_buffer.vertex(ofs.x+this.sway*2,ofs.y-this.h-20);
+			this.img_buffer.vertex(p3.x,p3.y);
+			this.img_buffer.vertex(p4.x,p4.y);
+			this.img_buffer.endShape(CLOSE);
+			this.img_buffer.ellipse(ofs.x+this.sway*2, ofs.y-this.h-20, this.w, this.w);
+			break;
 	}
-	this.debug_cb = [];
 };
-Game.prototype.setGamestate = function (state) {
-	//animation
-	this.gamestate = state;
-};
-Game.prototype.toggleDebug = function () {
-	this.debug_mode = !this.debug_mode;
-};
+
+
+
+// -=- Dragging mouse control -=- //
+//
+// function mouseDragged(){
+// 	var dx = mouseX - pmouseX;
+// 	var dy = mouseY - pmouseY;
+// 	camera.move(dx,dy);
+// }
+// function mouseWheel(e){
+// 	if(hmouseCanvas){
+// 		camera.zoom += e.delta*(camera.zoom*0.001);
+// 		camera.zoom = constrain(camera.zoom,0.1,10);
+// 	}
+// }
+
+

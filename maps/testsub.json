@@ -1,0 +1,68 @@
+{
+  "music":null,
+  "map_data" : {
+    "vertex" : [
+        [
+          [1173,232],[1373,232],[1373,432],[1173,432]
+        ],
+        [[0,400],[800,-400],[90,-450],[169,-897],[481,-890],[488,-1068],[194,-1068],[200,-1600],[-300,-1800],[-194,-1068],[-488,-1068],[-481,-890],[-169,-897],[-110,-500],[-800,-400]]
+      ],
+    "inverted":true
+  },
+  "entities" : [
+    {
+      "type":"Warp",
+      "pos":[1272,252],
+      "_tp_back":true
+    },
+    {
+      "type":"Tortch",
+      "pos":[1302,412]
+    },
+    {
+      "type":"House",
+      "pos":[-205,-448],
+      "_tp_back":true
+    },
+    {
+      "type":"Tortch",
+      "pos":[-400,-973],
+      "col":[0,2,1]
+    },
+    {
+      "type":"Tortch",
+      "pos":[420,-973],
+      "col":[0,2,1]
+    }
+  ],
+  "npcs" : [
+    {
+      "name": "Booty",
+      "surname": "McScervitch",
+      "age": 20,
+      "pos": [1195,420],
+      "gender": "male",
+      "flags": {},
+      "attribs": {},
+      "text": {
+        "default": [
+          [
+            "My name is...\n... ...\n...",
+            "Actually... I'm an example of a redundant choice...\nDo you want hear about it?",
+            {
+              "yesno":{
+                "case": [
+                  [
+                    "Really!?\n... ...\n..."
+                  ]
+                ],
+                "default": 1
+              }
+            },
+            "Well... I'll talk to you about it later then..."
+          ]
+        ]
+      }
+    }
+  ]
+}

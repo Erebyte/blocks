@@ -1,0 +1,49 @@
+// The Big and Scary TODO: List //
+
+bugs:
+
+- change camera movement
+- grapple percists between maps
+- sound glitches
+- convert to img_buffers (for performance)
+- add prototype.check to tombstone
+
+- amouse pos is off... 
+- grapple hit need to calc on line not pos
+
+
+todo:
+
+- colision **Done-ish
+- finish grapple
+- add grassVariations
+- add enemies
+- add rats
+- add agent system
+- agent movment
+- agent following
+- add combat
+
+* fix map builder
+* build alpha build story
+
+
+Erebyte:
+
+- do Email
+- add about
+- add home
+- fix gameLoading
+
+
+
+// To Make Alpha //
+- collision * 50%
+- audio * 75%
+- enemies * 0%
+- combat * 0%
+- grapple * 50%
+- mapbuilder * 50%
+- alpha build story * 0%
+- 90% bug free
+- 60 fps performance
